@@ -1,0 +1,52 @@
+---
+import { Image } from 'astro:assets'
+import { homeGalleryItems, homeGallerySeasons } from '../data/home-gallery'
+---
+
+<section class="gallery-section defer-offscreen">
+  <div class="container-main">
+    <div class="section-label">相册</div>
+    <h2 class="section-heading">四季掠影</h2>
+    <div class="accent-bar"></div>
+
+    <!-- Season Grid -->
+    <div class="season-grid">
+      {homeGallerySeasons.map((season) => (
+        <div class="season-item">
+          <img
+            src={season.src}
+            alt={season.alt}
+            loading="lazy"
+            width="600"
+            height="800"
+          />
+          <span class="season-label">{season.label}</span>
+        </div>
+      ))}
+    </div>
+
+    <!-- Masonry Gallery -->
+    <div style="margin-top: 2.5rem;">
+      <h3 class="section-heading" style="font-size: 1.5rem;">更多照片</h3>
+      <div class="gallery-masonry">
+        {homeGalleryItems.map((item) => (
+          <div class="gallery-item">
+            <img
+              src={item.src}
+              alt={item.alt}
+              loading="lazy"
+              width="600"
+              height="800"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .gallery-section {
+    padding: 4rem 0;
+  }
+</style>

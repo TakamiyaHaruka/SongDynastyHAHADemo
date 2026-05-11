@@ -1,0 +1,21 @@
+---
+import { Image } from 'astro:assets'
+import type { ComponentProps } from 'astro/types'
+
+type ImageProps = ComponentProps<typeof Image>
+
+interface Props extends ImageProps {
+  preset?: 'avatar' | 'cover'
+}
+
+const { preset, ...props } = Astro.props
+
+const presets: Record<string, Partial<ImageProps>> = {
+  avatar: { fit: 'cover', position: 'center' },
+  cover: { fit: 'cover', position: 'center' },
+}
+
+const merged = preset ? { ...presets[preset], ...props } : props
+---
+
+<Image {...merged} />

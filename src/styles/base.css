@@ -1,0 +1,161 @@
+@theme {
+  --font-heading: 'DM Serif Display', 'Noto Serif SC', Georgia, serif;
+  --font-body: 'Inter', -apple-system, 'Noto Sans SC', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --color-bg: #faf7f2;
+  --color-bg-alt: #f0ebe3;
+  --color-text: #2c2c2c;
+  --color-text-muted: #8e8e8e;
+  --color-accent: #c0392b;
+  --color-accent-hover: #a93226;
+  --color-surface: #ffffff;
+  --color-border: #e8e2d9;
+  --color-menu-bg: rgba(250, 247, 242, 0.85);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1a1a1a;
+    --color-bg-alt: #242424;
+    --color-text: #e8e4de;
+    --color-text-muted: #999;
+    --color-accent: #e74c3c;
+    --color-accent-hover: #ff6b5a;
+    --color-surface: #2a2a2a;
+    --color-border: #3a3a3a;
+    --color-menu-bg: rgba(26, 26, 26, 0.88);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  line-height: 1.3;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+/* Page view transitions */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: fade-out 0.2s ease-out;
+}
+
+::view-transition-new(root) {
+  animation: fade-in 0.3s ease-in;
+}
+
+@keyframes fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* Skeleton loading for slow transitions */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-alt) 25%,
+    var(--color-bg) 50%,
+    var(--color-bg-alt) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Container */
+.container-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .container-main {
+    padding: 0 2rem;
+  }
+}
+
+/* Utility */
+.font-heading { font-family: var(--font-heading); }
+.font-body { font-family: var(--font-body); }
+.font-mono { font-family: var(--font-mono); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

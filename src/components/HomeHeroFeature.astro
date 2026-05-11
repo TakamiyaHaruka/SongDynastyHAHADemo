@@ -1,0 +1,90 @@
+---
+const today = new Date()
+const hour = today.getHours()
+let greeting = '你好'
+if (hour < 6) greeting = '夜深了'
+else if (hour < 12) greeting = '早上好'
+else if (hour < 18) greeting = '下午好'
+else greeting = '晚上好'
+---
+
+<section class="hero-feature">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <span class="hero-greeting">{greeting}</span>
+    <h1 class="hero-title">朕的御花园</h1>
+    <p class="hero-subtitle">翰墨丹青 · 治国安邦 · 千秋功过留与后人评说</p>
+  </div>
+</section>
+
+<style>
+  .hero-feature {
+    position: relative;
+    height: 55vh;
+    min-height: 360px;
+    max-height: 640px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(192, 57, 43, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(243, 156, 18, 0.1) 0%, transparent 50%),
+      linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 50%, #2d2d2d 100%);
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.1) 60%,
+      transparent 100%
+    );
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    padding: 3rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .hero-greeting {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .hero-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: white;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-feature {
+      height: 40vh;
+      min-height: 300px;
+    }
+  }
+</style>

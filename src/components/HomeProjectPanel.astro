@@ -1,0 +1,80 @@
+---
+interface Project {
+  name: string
+  description: string
+  url: string
+  logo: string
+}
+
+const projects: Project[] = [
+  {
+    name: '崇宁兴学',
+    description: '即位之初，兴学校、造士类，创画学与书学，广纳天下才俊。设翰林图画院，亲自主持画师选拔，以诗意命题考校画艺，一时文风鼎盛。',
+    url: '#',
+    logo: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112"><rect width="112" height="112" rx="8" fill="#f5f0e8"/><rect x="20" y="18" width="72" height="8" rx="2" fill="#8b4513"/><rect x="24" y="26" width="64" height="58" rx="1" fill="#fff8ee" stroke="#d4a574" stroke-width="1"/><text x="56" y="52" text-anchor="middle" font-family="serif" font-size="16" fill="#2c2c2c">崇宁</text><text x="56" y="72" text-anchor="middle" font-family="serif" font-size="16" fill="#2c2c2c">兴学</text><rect x="24" y="86" width="64" height="4" rx="1" fill="#8b4513"/><circle cx="36" cy="22" r="2" fill="#c0392b"/><circle cx="76" cy="22" r="2" fill="#c0392b"/></svg>'),
+  },
+  {
+    name: '瘦金体',
+    description: '融汇褚遂良、薛稷诸家之长，独创瘦金书体。其字铁画银钩，瘦而不枯，劲而不僵，如屈铁断金，自成一派，至今为书家所宗。',
+    url: '#',
+    logo: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112"><rect width="112" height="112" rx="8" fill="#f5f0e8"/><rect x="16" y="16" width="80" height="80" rx="4" fill="#fff8ee" stroke="#d4a574" stroke-width="1.5"/><text x="56" y="48" text-anchor="middle" font-family="serif" font-size="22" fill="#1a1a1a" font-weight="bold">瘦金</text><text x="56" y="78" text-anchor="middle" font-family="serif" font-size="22" fill="#c0392b" font-weight="bold">之体</text><line x1="24" y1="88" x2="88" y2="88" stroke="#d4a574" stroke-width="0.5"/></svg>'),
+  },
+  {
+    name: '宣和画谱',
+    description: '敕令编纂《宣和画谱》《宣和书谱》，收录宫中所藏历代书画珍品，著录详备，为中国美术史上最重要的文献之一。',
+    url: '#',
+    logo: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112"><rect width="112" height="112" rx="8" fill="#f5f0e8"/><rect x="22" y="14" width="68" height="84" rx="3" fill="#fff8ee" stroke="#8b4513" stroke-width="1.5"/><rect x="22" y="14" width="10" height="84" rx="3" fill="#8b4513"/><text x="27" y="42" text-anchor="middle" font-family="serif" font-size="10" fill="#fff8ee" writing-mode="tb">宣和画谱</text><text x="62" y="46" text-anchor="middle" font-family="serif" font-size="11" fill="#2c2c2c">收录历代</text><text x="62" y="62" text-anchor="middle" font-family="serif" font-size="11" fill="#2c2c2c">书画珍品</text><text x="62" y="78" text-anchor="middle" font-family="serif" font-size="9" fill="#8e8e8e">卷帙浩繁</text></svg>'),
+  },
+  {
+    name: '营建艮岳',
+    description: '历时六年，于汴京东北隅营造艮岳皇家园林。叠石理水，穷极华丽，集天下奇花异石于一园。虽劳民伤财，然园林之美，冠绝古今。',
+    url: '#',
+    logo: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112"><rect width="112" height="112" rx="8" fill="#e8e0d0"/><path d="M10 90 Q30 50 56 70 Q82 90 102 55" fill="#6b8e6b" opacity="0.5"/><path d="M0 95 Q20 65 45 80 Q70 95 112 70 L112 112 L0 112Z" fill="#7a9e7a" opacity="0.6"/><polygon points="56,22 42,42 70,42" fill="#8b4513"/><rect x="48" y="42" width="16" height="28" fill="#d4a574"/><rect x="44" y="42" width="24" height="4" fill="#8b4513"/><rect x="52" y="70" width="8" height="12" fill="#8b4513"/><path d="M20 85 Q28 72 36 85" fill="none" stroke="#4a7a4a" stroke-width="2"/><circle cx="78" cy="50" r="12" fill="#c0392b" opacity="0.15"/><circle cx="85" cy="55" r="8" fill="#c0392b" opacity="0.1"/></svg>'),
+  },
+]
+---
+
+<section class="project-section defer-offscreen">
+  <div class="container-main">
+    <div class="section-label">功业</div>
+    <h2 class="section-heading">朕的千秋功业</h2>
+    <div class="accent-bar"></div>
+
+    <div class="project-grid">
+      {projects.map((project) => (
+        <a href={project.url} target={project.url.startsWith('http') ? '_blank' : undefined} rel={project.url.startsWith('http') ? 'noopener noreferrer' : undefined} class="project-card">
+          <img
+            src={project.logo}
+            alt={project.name}
+            class="project-logo"
+            loading="lazy"
+            width="56"
+            height="56"
+          />
+          <div>
+            <div class="project-name">{project.name}</div>
+            <p class="project-desc">{project.description}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .project-section {
+    padding: 4rem 0;
+  }
+
+  .project-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .project-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

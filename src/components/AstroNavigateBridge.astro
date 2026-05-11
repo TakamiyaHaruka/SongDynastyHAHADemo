@@ -1,0 +1,17 @@
+---
+// Exposes Astro's navigate and prefetch to window for client scripts
+---
+
+<script>
+  import { navigate } from 'astro:transitions/client'
+
+  declare global {
+    interface Window {
+      hahaha: {
+        navigate: typeof navigate
+      }
+    }
+  }
+
+  window.hahaha = window.hahaha ?? { navigate }
+</script>

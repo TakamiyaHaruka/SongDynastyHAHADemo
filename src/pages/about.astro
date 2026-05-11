@@ -1,0 +1,228 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+interface Milestone {
+  year: string
+  title: string
+  description: string
+}
+
+const milestones: Milestone[] = [
+  { year: '1082', title: '降生于禁中', description: '生于汴京皇宫，神宗第十一子，母为陈皇后。' },
+  { year: '1100', title: '即皇帝位', description: '哲宗崩，无嗣，以端王入继大统，年仅十八。' },
+  { year: '1102', title: '崇宁兴学', description: '兴学校，造士类，创画学、书学，天下文风大振。' },
+  { year: '1107', title: '创瘦金体', description: '融汇百家，独创瘦金书，铁画银钩，自成一派。' },
+  { year: '1112', title: '绘瑞鹤图', description: '群鹤翔于端门之上，御笔亲绘，传世名作。' },
+  { year: '1114', title: '撰大观茶论', description: '亲撰茶论二十篇，品鉴天下名茶，穷极茶道之妙。' },
+  { year: '1117', title: '营建艮岳', description: '叠石理水，穷极华丽，集天下奇石花木于一园。' },
+  { year: '1127', title: '靖康之变', description: '金兵南下，汴京陷落，北狩五国城，客死异乡。' },
+]
+
+const colors = [
+  { name: '天青', hex: '#68b8d7', desc: '汝窑之色' },
+  { name: '朱砂', hex: '#c0392b', desc: '御笔之红' },
+  { name: '墨色', hex: '#2c2c2c', desc: '松烟之墨' },
+  { name: '月白', hex: '#faf7f2', desc: '素绢之白' },
+  { name: '赭石', hex: '#8e6b3e', desc: '画山之色' },
+  { name: '藤黄', hex: '#d4a017', desc: '花鸟之彩' },
+]
+---
+
+<BaseLayout title="关于" currentPath="/about">
+  <div class="container-main" style="padding-top: 3rem; padding-bottom: 3rem;">
+    <div class="section-label">关于朕</div>
+    <h1 class="section-heading">宋徽宗 赵佶</h1>
+    <div class="accent-bar"></div>
+
+    <!-- Bio -->
+    <div class="about-bio">
+      <p>朕赵佶，字元永，宋朝第八位皇帝。虽非治世之明君，然于书画诗词、茶道园林，皆有独到之造诣。</p>
+      <p>在位期间，兴画学、建书院、编《宣和画谱》《宣和书谱》，集天下艺术之大成。创瘦金体书法，工笔花鸟自成一派，至今为后世所宗。</p>
+      <p>营建艮岳，叠石理水，穷极华丽，虽劳民伤财，然园林之美，冠绝古今。撰《大观茶论》，品鉴天下名茶，穷茶道之妙。</p>
+      <p>奈何治国无方，终致靖康之耻，北狩不归。艺术之才，治国之失，千秋功过，留与后人评说。</p>
+    </div>
+
+    <!-- Artistic Skills -->
+    <section class="about-section">
+      <h2 class="section-heading" style="font-size: 1.5rem;">艺术造诣</h2>
+      <div class="tech-grid">
+        {['瘦金体书法', '工笔花鸟', '山水画', '诗词歌赋', '茶道', '园林设计', '金石鉴藏', '音律', '蹴鞠', '道教'].map((tech) => (
+          <span class="tech-tag">{tech}</span>
+        ))}
+      </div>
+    </section>
+
+    <!-- Milestones -->
+    <section class="about-section">
+      <h2 class="section-heading" style="font-size: 1.5rem;">生平大事</h2>
+      <div class="milestones">
+        {milestones.map((m) => (
+          <div class="milestone">
+            <span class="milestone-year">{m.year}</span>
+            <div class="milestone-content">
+              <div class="milestone-title">{m.title}</div>
+              <div class="milestone-desc">{m.description}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Color Palette -->
+    <section class="about-section">
+      <h2 class="section-heading" style="font-size: 1.5rem;">御用色谱</h2>
+      <div class="color-grid">
+        {colors.map((c) => (
+          <div class="color-swatch" data-hex={c.hex}>
+            <div class="color-preview" style={`background: ${c.hex};`}></div>
+            <div class="color-info">
+              <div class="color-name">{c.name}</div>
+              <div class="color-hex">{c.hex}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .about-bio {
+    max-width: 640px;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+  }
+
+  .about-bio p {
+    margin-bottom: 1rem;
+  }
+
+  .about-section {
+    margin-bottom: 3rem;
+  }
+
+  .tech-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .tech-tag {
+    padding: 0.4rem 0.875rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    color: var(--color-text);
+    transition: all 0.2s ease;
+    cursor: default;
+  }
+
+  .tech-tag:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .milestones {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1rem;
+  }
+
+  .milestone {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .milestone:first-child {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .milestone-year {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    color: var(--color-accent);
+    flex-shrink: 0;
+    width: 4rem;
+  }
+
+  .milestone-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .milestone-desc {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .color-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .color-swatch {
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .color-swatch:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .color-preview {
+    height: 80px;
+  }
+
+  .color-info {
+    padding: 0.75rem;
+  }
+
+  .color-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 0.125rem;
+  }
+
+  .color-hex {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+</style>
+
+<script>
+  document.querySelectorAll('.color-swatch').forEach((el) => {
+    el.addEventListener('click', () => {
+      const hex = el.getAttribute('data-hex')
+      if (hex) {
+        navigator.clipboard.writeText(hex).then(() => {
+          const info = el.querySelector('.color-hex')
+          if (info) {
+            const orig = info.textContent
+            info.textContent = '已复制!'
+            setTimeout(() => { info.textContent = orig }, 1500)
+          }
+        })
+      }
+    })
+  })
+</script>

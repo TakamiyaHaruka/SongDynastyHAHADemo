@@ -1,0 +1,57 @@
+---
+import HomeInfoIcon from './HomeInfoIcon.astro'
+import type { InfoItem } from '../data/home-info'
+
+interface Props {
+  label: string
+  title: string
+  items: InfoItem[]
+}
+
+const { label, title, items } = Astro.props
+---
+
+<section class="info-section defer-offscreen">
+  <div class="container-main">
+    <div class="section-label">{label}</div>
+    <h2 class="section-heading">{title}</h2>
+    <div class="accent-bar"></div>
+    <div class="info-grid">
+      {items.map((item) => (
+        <div class="info-card">
+          <div class="info-card-icon">
+            <HomeInfoIcon icon={item.icon} />
+          </div>
+          <div>
+            <div class="info-card-title">{item.name}</div>
+            <div class="info-card-desc">{item.description}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .info-section {
+    padding: 4rem 0;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .info-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .info-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,128 @@
+---
+/**
+ * Music panel - 宫廷雅乐
+ */
+
+interface Track {
+  title: string
+  artist: string
+  album: string
+  year: string
+  genre: string
+  artwork: string
+}
+
+const svg = (content: string) =>
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">${content}</svg>`)}`
+
+const tracks: Track[] = [
+  {
+    title: '霓裳羽衣曲', artist: '唐代宫廷', album: '宫廷雅乐', year: '唐代', genre: '雅乐',
+    artwork: svg(`<rect width="400" height="400" fill="#f5f0e8"/><circle cx="200" cy="200" r="120" fill="none" stroke="#c0392b" stroke-width="1.5" opacity="0.3"/><text x="200" y="180" text-anchor="middle" font-family="serif" font-size="32" fill="#2c2c2c">霓裳</text><text x="200" y="225" text-anchor="middle" font-family="serif" font-size="32" fill="#c0392b">羽衣</text><path d="M140 280 Q170 260 200 270 Q230 280 260 260" fill="none" stroke="#8b4513" stroke-width="1" opacity="0.4"/>`),
+  },
+  {
+    title: '梅花三弄', artist: '古琴名曲', album: '琴曲集', year: '晋代', genre: '古琴',
+    artwork: svg(`<rect width="400" height="400" fill="#f8f4ee"/><circle cx="200" cy="200" r="120" fill="none" stroke="#8b4513" stroke-width="1.5" opacity="0.3"/><path d="M160 180 Q180 150 200 180 Q220 150 240 180" fill="none" stroke="#c0392b" stroke-width="2"/><circle cx="180" cy="160" r="6" fill="#c0392b" opacity="0.5"/><circle cx="210" cy="150" r="5" fill="#c0392b" opacity="0.4"/><circle cx="230" cy="165" r="7" fill="#c0392b" opacity="0.45"/><text x="200" y="260" text-anchor="middle" font-family="serif" font-size="28" fill="#2c2c2c">梅花三弄</text>`),
+  },
+  {
+    title: '平沙落雁', artist: '古琴名曲', album: '琴曲集', year: '明代', genre: '古琴',
+    artwork: svg(`<rect width="400" height="400" fill="#f0e8d8"/><circle cx="200" cy="200" r="120" fill="none" stroke="#5a7a5a" stroke-width="1.5" opacity="0.3"/><path d="M120 250 Q180 220 240 240 Q300 260 360 230" fill="none" stroke="#5a7a5a" stroke-width="1.5" opacity="0.4"/><path d="M180 180 L190 160 L185 150" fill="none" stroke="#5a5a5a" stroke-width="1.5"/><path d="M220 170 L230 150 L225 140" fill="none" stroke="#5a5a5a" stroke-width="1.5"/><text x="200" y="300" text-anchor="middle" font-family="serif" font-size="28" fill="#2c2c2c">平沙落雁</text>`),
+  },
+]
+
+const featured = tracks[0]
+---
+
+<section class="music-section defer-offscreen">
+  <div class="container-main">
+    <div class="section-label">雅乐</div>
+    <h2 class="section-heading">朕的宫廷雅乐</h2>
+    <div class="accent-bar"></div>
+
+    <!-- Featured Track -->
+    <div class="music-featured">
+      <img
+        src={featured.artwork}
+        alt={`${featured.album} cover`}
+        class="music-cover"
+        loading="lazy"
+        width="160"
+        height="160"
+      />
+      <div class="music-info">
+        <div class="music-title">{featured.title}</div>
+        <div class="music-artist">{featured.artist}</div>
+        <div class="music-meta">
+          <span>{featured.album}</span>
+          <span>{featured.year}</span>
+          <span>{featured.genre}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Track List -->
+    <div class="music-track-list">
+      {tracks.map((track, i) => (
+        <div class="music-track" data-index={i}>
+          <span class="music-track-num">{String(i + 1).padStart(2, '0')}</span>
+          <div style="flex: 1; min-width: 0;">
+            <div class="music-track-title">{track.title}</div>
+            <div class="music-track-artist">{track.artist}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .music-section {
+    padding: 4rem 0;
+    background: var(--color-bg-alt);
+  }
+
+  .music-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .music-title {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .music-artist {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .music-meta {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    flex-wrap: wrap;
+  }
+
+  .music-meta span {
+    padding: 0.2rem 0.5rem;
+    background: var(--color-bg);
+    border-radius: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .music-featured {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .music-meta {
+      justify-content: center;
+    }
+  }
+</style>

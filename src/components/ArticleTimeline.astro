@@ -1,0 +1,120 @@
+---
+import type { CollectionEntry } from 'astro:content'
+
+const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/'
+
+interface Props {
+  posts: CollectionEntry<'blog'>[]
+}
+
+const { posts } = Astro.props
+const recentPosts = posts.slice(0, 8)
+---
+
+<section class="timeline-section defer-offscreen">
+  <div class="container-main">
+    <div class="section-label">最近文章</div>
+    <h2 class="section-heading">文章时间线</h2>
+    <div class="accent-bar"></div>
+
+    <div class="timeline-list">
+      {recentPosts.map((post) => (
+        <a href={`${base}posts/${post.id}`} class="timeline-item">
+          <span class="timeline-date">
+            {post.data.date?.slice(5).replace('-', '/') ?? ''}
+          </span>
+          <div class="timeline-content">
+            <div class="timeline-title">{post.data.title}</div>
+            {post.data.description && (
+              <div class="timeline-desc">{post.data.description}</div>
+            )}
+          </div>
+          {post.data.category && (
+            <span class="tag" style="flex-shrink: 0;">{post.data.category}</span>
+          )}
+        </a>
+      ))}
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <a href={`${base}posts`} class="btn-outline">
+        查看全部文章
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .timeline-section {
+    padding: 4rem 0;
+    background: var(--color-bg-alt);
+  }
+
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--color-border);
+    text-decoration: none;
+    color: var(--color-text);
+    transition: all 0.2s ease;
+  }
+
+  .timeline-item:hover {
+    padding-left: 0.5rem;
+    color: var(--color-text);
+  }
+
+  .timeline-item:first-child {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .timeline-date {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    width: 4rem;
+    padding-top: 0.2rem;
+  }
+
+  .timeline-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .timeline-title {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .timeline-desc {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @media (max-width: 640px) {
+    .timeline-item {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .timeline-date {
+      width: auto;
+    }
+  }
+</style>

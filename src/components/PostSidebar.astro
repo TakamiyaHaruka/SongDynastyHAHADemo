@@ -1,0 +1,108 @@
+---
+import type { CategoryItem } from '../utils/categories'
+
+const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/'
+
+interface Props {
+  categories: CategoryItem[]
+  activeCategory?: string
+}
+
+const { categories, activeCategory } = Astro.props
+---
+
+<aside class="post-sidebar">
+  <!-- Profile -->
+  <div class="sidebar-profile">
+    <div class="sidebar-avatar-placeholder"></div>
+    <div class="sidebar-name">赵佶</div>
+    <div class="sidebar-tagline">朕的奏折批阅记录</div>
+  </div>
+
+  <!-- Categories -->
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">分类</div>
+    <div class="sidebar-categories">
+      <a
+        href={`${base}posts`}
+        class:list={['tag', { 'tag-active': !activeCategory }]}
+      >
+        全部
+      </a>
+      {categories.map((cat) => (
+        <a
+          href={`${base}posts/category/${cat.name}`}
+          class:list={['tag', { 'tag-active': activeCategory === cat.name }]}
+        >
+          {cat.name}
+          <span class="tag-count">{cat.count}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <!-- RSS -->
+  <div class="sidebar-section">
+    <a href={`${base}rss.xml`} class="btn-outline" style="width: 100%; justify-content: center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M6.18 15.64a2.18 2.18 0 010 4.36 2.18 2.18 0 010-4.64zM4 4.44A15.56 15.56 0 0119.56 20h-2.83A12.73 12.73 0 004 7.27V4.44zm0 5.66a9.9 9.9 0 019.9 9.9h-2.83A7.07 7.07 0 004 12.93V10.1z" />
+      </svg>
+      RSS 订阅
+    </a>
+  </div>
+</aside>
+
+<style>
+  .post-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .sidebar-profile {
+    text-align: center;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .sidebar-avatar-placeholder {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--color-bg-alt);
+    margin: 0 auto 0.75rem;
+    border: 2px solid var(--color-border);
+  }
+
+  .sidebar-name {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .sidebar-tagline {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  .sidebar-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .sidebar-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag-count {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-left: 0.15rem;
+  }
+</style>

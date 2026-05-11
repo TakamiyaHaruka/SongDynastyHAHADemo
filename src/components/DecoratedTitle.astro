@@ -1,0 +1,25 @@
+---
+interface Props {
+  level?: 'h1' | 'h2' | 'h3' | 'h4'
+  class?: string
+}
+
+const { level = 'h2', class: className } = Astro.props
+const Tag = level
+---
+
+<Tag class:list={['section-heading', className]}>
+  <span class="accent-bar"></span>
+  <slot />
+</Tag>
+
+<style>
+  .section-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .section-heading .accent-bar {
+    margin-bottom: 0.75rem;
+  }
+</style>

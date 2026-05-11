@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import HomeHeroFeature from '../components/HomeHeroFeature.astro'
+import HomeHeroPanel from '../components/HomeHeroPanel.astro'
+import ArticleTimeline from '../components/ArticleTimeline.astro'
+import HomeInfoGrid from '../components/HomeInfoGrid.astro'
+import HomeProjectPanel from '../components/HomeProjectPanel.astro'
+import HomeMusicPanel from '../components/HomeMusicPanel.astro'
+import HomeGalleryPanel from '../components/HomeGalleryPanel.astro'
+import { homeSkillItems, homeDeviceItems } from '../data/home-info'
+import { getCollection } from 'astro:content'
+import { sortPostsByDate } from '../utils/date'
+
+const allPosts = await getCollection('blog')
+const posts = sortPostsByDate(allPosts)
+---
+
+<BaseLayout title="首页" currentPath="/">
+  <HomeHeroFeature />
+
+  <!-- Two-column layout: main + sidebar (desktop) -->
+  <div class="home-layout container-main">
+    <div class="home-main">
+      <ArticleTimeline posts={posts} />
+      <HomeInfoGrid label="技能" title="技术栈" items={homeSkillItems} />
+      <HomeProjectPanel />
+      <HomeInfoGrid label="设备" title="日常设备" items={homeDeviceItems} />
+      <HomeMusicPanel />
+      <HomeGalleryPanel />
+    </div>
+    <div class="home-sidebar">
+      <HomeHeroPanel />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .home-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  @media (min-width: 1024px) {
+    .home-layout {
+      grid-template-columns: 1fr 280px;
+    }
+  }
+
+  .home-main {
+    min-width: 0;
+  }
+
+  .home-sidebar {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .home-sidebar {
+      display: block;
+    }
+  }
+</style>
