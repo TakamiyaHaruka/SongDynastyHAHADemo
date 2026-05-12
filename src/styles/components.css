@@ -404,70 +404,401 @@
 }
 
 /* ===== Music Panel ===== */
-.music-featured {
-  display: flex;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 2px;
+@keyframes vinyl-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.home-music-panel {
+  position: relative;
+  overflow: hidden;
 }
 
-.music-cover {
-  width: 160px;
-  height: 160px;
-  border-radius: 4px;
-  object-fit: cover;
-  flex-shrink: 0;
+.home-music-head {
+  margin-bottom: 1.5rem;
 }
 
-@media (max-width: 640px) {
-  .music-cover {
-    width: 100px;
-    height: 100px;
-  }
-}
-
-.music-track-list {
+.home-music-layout {
+  --music-accent: 36 65% 46%;
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin-top: 1rem;
+  min-width: 0;
 }
 
-.music-track {
+.home-music-list {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 2.5rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 2.5rem), transparent 100%);
+}
+
+.home-music-list.is-scrolled-start {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2.5rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2.5rem), transparent 100%);
+}
+
+.home-music-list-shell {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.home-music-list-progress {
+  --music-list-progress: 0;
+  --music-list-thumb-height: 2rem;
+  position: absolute;
+  top: 0.2rem;
+  right: -0.75rem;
+  bottom: 0.2rem;
+  width: 4px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, hsl(var(--music-accent)) 20%, transparent) 0%, color-mix(in srgb, hsl(var(--music-accent)) 10%, transparent) 50%, color-mix(in srgb, hsl(var(--music-accent)) 20%, transparent) 100%);
+  opacity: 0;
+  transform: translateX(4px);
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.home-music-list-progress.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.home-music-list-progress.is-disabled {
+  display: none;
+}
+
+.home-music-list-progress-bar {
+  position: absolute;
+  top: calc(var(--music-list-progress, 0) * (100% - var(--music-list-thumb-height)));
+  left: 50%;
+  display: block;
+  width: 2px;
+  height: var(--music-list-thumb-height);
+  background: linear-gradient(180deg, color-mix(in srgb, hsl(var(--music-accent)) 74%, white) 0%, hsl(var(--music-accent)) 100%);
+  box-shadow: 0 0 10px color-mix(in srgb, hsl(var(--music-accent)) 52%, transparent);
+  transform: translateX(-50%);
+  transition: top 120ms linear;
+}
+
+.home-music-list.is-scrolled-end {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.home-music-list.is-scrolled-start.is-scrolled-end {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 2rem, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 2rem, black 100%);
+}
+
+.home-music-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.home-music-list > li {
+  display: flex;
+  min-height: 0;
+  flex: none;
+}
+
+.home-music-list-item {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 1rem;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #faf7f2 22%, transparent) 0%, transparent 34%),
+    linear-gradient(165deg, color-mix(in srgb, hsl(var(--music-accent)) 4%, var(--color-surface)) 0%, color-mix(in srgb, hsl(var(--music-accent)) 1.5%, var(--color-surface)) 100%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, hsl(var(--music-accent)) 10%, color-mix(in srgb, var(--color-text) 10%, transparent)),
+    inset 0 1px 0 color-mix(in srgb, #faf7f2 24%, transparent);
+  padding: 0 1.25rem;
+  border: none;
+  border-radius: 0;
+  text-align: left;
+  color: var(--color-text);
+  cursor: pointer;
+  height: 70px;
+  transition:
+    height 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 300ms,
+    box-shadow 300ms;
+}
+
+/* ── Artwork: hidden for inactive, visible for active ── */
+.home-music-item-artwork {
+  flex-shrink: 0;
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    width 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 400ms ease;
+}
+
+.home-music-item-artwork-cover {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, hsl(var(--music-accent)) 14%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-surface) 94%, transparent) 100%);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 64%, transparent) inset,
+    0 10px 22px color-mix(in srgb, hsl(var(--music-accent)) 22%, transparent);
+}
+
+.home-music-item-artwork-cover::before,
+.home-music-item-artwork-cover::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.home-music-item-artwork-cover::before {
+  inset: 3px;
+  border: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, white 18%, transparent) inset;
+}
+
+.home-music-item-artwork-cover::after {
+  inset: 3px;
+  background: linear-gradient(130deg, color-mix(in srgb, white 20%, transparent) 0%, transparent 35%);
+  mix-blend-mode: screen;
+}
+
+.home-music-item-artwork-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: opacity 300ms ease;
+}
+
+.home-music-item-artwork-fallback {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
-  border-radius: 2px;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  color: color-mix(in srgb, var(--color-text) 48%, transparent);
+  font-family: var(--font-body), sans-serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* ── Active item: expanded height + visible artwork ── */
+.home-music-list-item.is-active {
+  height: 210px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #faf7f2 24%, transparent) 0%, transparent 32%),
+    linear-gradient(165deg, color-mix(in srgb, hsl(var(--music-accent)) 14%, var(--color-surface)) 0%, color-mix(in srgb, hsl(var(--music-accent)) 19%, var(--color-surface)) 100%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, hsl(var(--music-accent)) 34%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
+    0 8px 20px color-mix(in srgb, hsl(var(--music-accent)) 10%, transparent);
+}
+
+.home-music-list-item.is-active .home-music-item-artwork {
+  width: 196px;
+  opacity: 1;
+}
+
+[data-home-music][data-music-playing="true"] .home-music-list-item.is-active .home-music-item-artwork-cover {
+  animation: vinyl-spin 40s linear infinite;
+}
+
+.home-music-list-item:hover {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 18%, transparent) 0%, transparent 34%),
+    linear-gradient(165deg, color-mix(in srgb, hsl(var(--music-accent)) 7%, var(--color-surface)) 0%, color-mix(in srgb, hsl(var(--music-accent)) 11%, var(--color-surface)) 100%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, hsl(var(--music-accent)) 18%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #faf7f2 26%, transparent);
+}
+
+.home-music-list-item.is-active:hover {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 20%, transparent) 0%, transparent 32%),
+    linear-gradient(165deg, color-mix(in srgb, hsl(var(--music-accent)) 17%, var(--color-surface)) 0%, color-mix(in srgb, hsl(var(--music-accent)) 22%, var(--color-surface)) 100%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, hsl(var(--music-accent)) 40%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 26%, transparent);
+}
+
+.home-music-list-item:focus-visible {
+  outline: 2px solid color-mix(in srgb, hsl(var(--music-accent)) 56%, transparent);
+  outline-offset: 2px;
+}
+
+/* ── Play toggle ── */
+.home-music-item-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.14rem;
+  height: 2.14rem;
+  border: 1px solid color-mix(in srgb, hsl(var(--music-accent)) 36%, transparent);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, hsl(var(--music-accent)) 42%, var(--color-surface)) 0%, color-mix(in srgb, hsl(var(--music-accent)) 32%, var(--color-surface)) 100%);
+  color: color-mix(in srgb, var(--color-text) 88%, transparent);
+  padding: 0;
+  line-height: 1;
   cursor: pointer;
-  transition: background 0.2s ease;
-  text-decoration: none;
-  color: var(--color-text);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 18%, transparent) inset,
+    0 2px 4px color-mix(in srgb, hsl(var(--music-accent)) 18%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease,
+    opacity 200ms ease;
 }
 
-.music-track:hover {
-  background: var(--color-bg-alt);
-  color: var(--color-text);
+.home-music-list-item.is-active .home-music-item-play {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.music-track-num {
+.home-music-item-play:hover {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, hsl(var(--music-accent)) 50%, var(--color-surface)) 0%, color-mix(in srgb, hsl(var(--music-accent)) 38%, var(--color-surface)) 100%);
+  border-color: color-mix(in srgb, hsl(var(--music-accent)) 48%, transparent);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 22%, transparent) inset,
+    0 3px 6px color-mix(in srgb, hsl(var(--music-accent)) 24%, transparent);
+}
+
+.home-music-item-play:active {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, hsl(var(--music-accent)) 34%, var(--color-surface)) 0%, color-mix(in srgb, hsl(var(--music-accent)) 38%, var(--color-surface)) 100%);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, hsl(var(--music-accent)) 12%, transparent);
+}
+
+.home-music-item-play:disabled {
+  cursor: not-allowed;
+  border-color: color-mix(in srgb, var(--color-text) 8%, transparent);
+  background: color-mix(in srgb, var(--color-text) 6%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-text) 32%, transparent);
+  box-shadow: none;
+}
+
+.home-music-item-play.is-playing {
+  border-color: color-mix(in srgb, hsl(var(--music-accent)) 50%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, hsl(var(--music-accent)) 48%, var(--color-surface)) 0%, color-mix(in srgb, hsl(var(--music-accent)) 36%, var(--color-surface)) 100%);
+}
+
+.home-music-item-play-icon {
+  width: 1.28rem;
+  height: 1.28rem;
+  flex-shrink: 0;
+}
+
+.home-music-play-path,
+.home-music-pause-path {
+  transition: opacity 180ms ease;
+}
+
+.home-music-play-path { opacity: 1; }
+.home-music-pause-path { opacity: 0; }
+.home-music-item-play.is-playing .home-music-play-path { opacity: 0; }
+.home-music-item-play.is-playing .home-music-pause-path { opacity: 1; }
+
+/* ── Track info text ── */
+.home-music-item-info {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.home-music-list-title {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.93rem;
+  font-weight: 700;
+  line-height: 1.28;
+}
+
+.home-music-list-artist {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
   font-size: 0.8rem;
-  color: var(--color-text-muted);
-  width: 1.5rem;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
 }
 
-.music-track-title {
-  font-size: 0.9rem;
+.home-music-list-item.is-active .home-music-list-title {
+  color: color-mix(in srgb, var(--color-text) 96%, white 4%);
+}
+
+.home-music-list-item.is-active .home-music-list-artist {
+  color: color-mix(in srgb, var(--color-text) 78%, transparent);
+}
+
+.home-music-item-meta {
+  display: none;
+}
+
+.home-music-list-item.is-active .home-music-item-meta {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.home-music-item-meta-chip {
+  color: color-mix(in srgb, var(--color-text) 56%, transparent);
+  font-size: 0.72rem;
   font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
-.music-track-artist {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
+.home-music-item-meta-chip + .home-music-item-meta-chip::before {
+  content: "\00b7";
+  margin-right: 0.35rem;
+}
+
+.home-music-empty {
+  margin: 0;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+  font-size: 0.92rem;
+  line-height: 1.72;
 }
 
 /* ===== Timeline ===== */
