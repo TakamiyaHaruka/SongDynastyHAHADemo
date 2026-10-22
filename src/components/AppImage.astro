@@ -4,13 +4,13 @@ import type { ComponentProps } from 'astro/types'
 
 type ImageProps = ComponentProps<typeof Image>
 
-interface Props extends ImageProps {
+type Props = ImageProps & {
   preset?: 'avatar' | 'cover'
 }
 
 const { preset, ...props } = Astro.props
 
-const presets: Record<string, Partial<ImageProps>> = {
+const presets: Record<NonNullable<Props['preset']>, Pick<ImageProps, 'fit' | 'position'>> = {
   avatar: { fit: 'cover', position: 'center' },
   cover: { fit: 'cover', position: 'center' },
 }

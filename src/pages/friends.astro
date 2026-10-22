@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import FriendCard from '../components/FriendCard.astro'
 import { friends, voidFriends } from '../data/friends'
 
 const allFriends = friends
@@ -7,55 +9,21 @@ const dormantFriends = voidFriends
 ---
 
 <BaseLayout title="友人" currentPath="/friends">
-  <div class="container-main" style="padding-top: 3rem; padding-bottom: 3rem;">
-    <div class="section-label">友情链接</div>
-    <h1 class="section-heading">友人帐</h1>
-    <div class="accent-bar"></div>
-    <p class="section-desc">感谢每一位朋友的链接与陪伴。</p>
+  <div class="container-main page-shell">
+    <SectionHeading label="友情链接" title="友人帐" level="h1" variant="page" description="感谢每一位朋友的链接与陪伴。" />
 
     <!-- Active Friends -->
-    <div class="friends-grid">
-      {allFriends.map((friend) => (
-        <a
-          href={friend.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="friend-card"
-        >
-          <div class="friend-avatar-placeholder">
-            {friend.name.charAt(0)}
-          </div>
-          <div style="min-width: 0;">
-            <div class="friend-name">{friend.name}</div>
-            <div class="friend-desc">{friend.description}</div>
-          </div>
-        </a>
-      ))}
-    </div>
+    <section aria-labelledby="friends-active-title">
+      <SectionHeading title="常来常往" id="friends-active-title" variant="compact" />
+      <div class="friends-grid">{allFriends.map(friend => <FriendCard friend={friend} />)}</div>
+    </section>
 
     {/* Dormant Friends */}
     {dormantFriends.length > 0 && (
-      <div style="margin-top: 3rem;">
-        <h2 class="section-heading" style="font-size: 1.5rem; opacity: 0.6;">休眠中的友人</h2>
-        <div class="friends-grid" style="opacity: 0.5;">
-          {dormantFriends.map((friend) => (
-            <a
-              href={friend.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="friend-card"
-            >
-              <div class="friend-avatar-placeholder">
-                {friend.name.charAt(0)}
-              </div>
-              <div style="min-width: 0;">
-                <div class="friend-name">{friend.name}</div>
-                <div class="friend-desc">{friend.description}</div>
-              </div>
-            </a>
-          ))}
-        </div>
-      </div>
+      <section class="friends-dormant" aria-labelledby="friends-dormant-title">
+        <SectionHeading title="休眠中的友人" id="friends-dormant-title" variant="compact" />
+        <div class="friends-grid">{dormantFriends.map(friend => <FriendCard friend={friend} />)}</div>
+      </section>
     )}
   </div>
 </BaseLayout>
@@ -63,34 +31,17 @@ const dormantFriends = voidFriends
 <style>
   .friends-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
   }
 
   @media (min-width: 640px) {
-    .friends-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
+    .friends-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
   @media (min-width: 1024px) {
-    .friends-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
+    .friends-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 
-  .friend-avatar-placeholder {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--color-bg-alt);
-    border: 2px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-text-muted);
-    flex-shrink: 0;
-  }
+  .friends-dormant { margin-top: var(--section-space); }
 </style>

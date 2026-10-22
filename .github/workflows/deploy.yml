@@ -3,11 +3,12 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   build:
@@ -26,19 +27,55 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore music metadata
+        uses: actions/cache@v6
+        with:
+          path: .cache/music-metadata.json
+          key: music-v2-${{ runner.os }}-${{ hashFiles('src/data/home-music.ts') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            music-v2-${{ runner.os }}-${{ hashFiles('src/data/home-music.ts') }}-
+            music-v2-${{ runner.os }}-
+
+      - name: Check Astro and TypeScript
+        run: pnpm check
+
+      - name: Test site interactions
+        run: pnpm test
 
       - name: Build Astro
         run: pnpm build
 
+      - name: Install browser for regression tests
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Test browser interactions
+        run: pnpm test:e2e
+
+      - name: Upload failed browser test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-regression-report
+          path: |
+            .cache/playwright-report/
+            .cache/playwright-results/
+          if-no-files-found: ignore
+
       - name: Upload artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist # Astro 默认打包出口
 
   deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+      <rect width="600" height="800" fill="#f8f4ee"/>
+      <path d="M0 600 Q100 520 200 560 Q350 620 500 540 Q550 520 600 550 L600 800 L0 800Z" fill="#6a8a6a" opacity="0.3"/>
+      <path d="M0 680 Q150 620 300 650 Q450 680 600 620 L600 800 L0 800Z" fill="#5a7a5a" opacity="0.4"/>
+      <path d="M100 500 L120 450 L110 400 L130 350 L120 300" fill="none" stroke="#3a5a3a" stroke-width="2.5"/>
+      <path d="M120 400 L90 370" fill="none" stroke="#3a5a3a" stroke-width="2"/>
+      <path d="M130 350 L160 320" fill="none" stroke="#3a5a3a" stroke-width="2"/>
+      <path d="M120 300 L90 270" fill="none" stroke="#3a5a3a" stroke-width="1.5"/>
+      <ellipse cx="100" cy="380" rx="18" ry="10" fill="#3a5a3a" opacity="0.15" transform="rotate(-20 100 380)"/>
+      <ellipse cx="150" cy="330" rx="16" ry="9" fill="#3a5a3a" opacity="0.12" transform="rotate(15 150 330)"/>
+      <ellipse cx="85" cy="280" rx="14" ry="8" fill="#3a5a3a" opacity="0.1" transform="rotate(-25 85 280)"/>
+      <circle cx="400" cy="200" r="45" fill="#f5e6d0" opacity="0.4"/>
+      <text x="500" y="700" text-anchor="middle" font-family="serif" font-size="28" fill="#2c2c2c" opacity="0.3">竹石图</text>
+    </svg>

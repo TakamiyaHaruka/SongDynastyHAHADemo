@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450">
+      <rect width="600" height="450" fill="#f8f4ee"/>
+      <path d="M0 280 Q100 240 200 260 Q350 290 500 240 Q550 220 600 250 L600 450 L0 450Z" fill="#7a9e7a" opacity="0.25"/>
+      <path d="M0 350 Q150 300 300 330 Q450 360 600 310 L600 450 L0 450Z" fill="#5a7e5a" opacity="0.35"/>
+      <circle cx="300" cy="150" r="40" fill="#f5e6d0" opacity="0.4"/>
+      <path d="M200 250 L220 220 L210 200 L230 180" fill="none" stroke="#5a5a5a" stroke-width="1.5"/>
+      <path d="M380 230 L400 200 L390 180 L410 160" fill="none" stroke="#5a5a5a" stroke-width="1.5"/>
+      <text x="300" y="400" text-anchor="middle" font-family="serif" font-size="24" fill="#2c2c2c" opacity="0.3">秋山</text>
+    </svg>

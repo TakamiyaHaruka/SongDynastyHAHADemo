@@ -1,0 +1,32 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import type { CategoryItem } from '../utils/categories'
+import PostCard from './PostCard.astro'
+import PostSidebar from './PostSidebar.astro'
+
+interface Props {
+  posts: CollectionEntry<'blog'>[]
+  categories: CategoryItem[]
+  activeCategory?: string
+}
+const { posts, categories, activeCategory } = Astro.props
+---
+
+<div class="posts-layout">
+  <div class="posts-list">
+    {posts.map(post => <PostCard post={post} />)}
+    {posts.length === 0 && <p class="empty-copy">此处尚无手札，稍后再来展卷。</p>}
+  </div>
+  <aside class="posts-aside"><PostSidebar categories={categories} activeCategory={activeCategory} /></aside>
+</div>
+
+<style>
+  .posts-layout { display: grid; grid-template-areas: 'filters' 'list'; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+  .posts-list { grid-area: list; min-width: 0; }
+  .posts-aside { grid-area: filters; min-width: 0; }
+  .empty-copy { padding-block: var(--space-8); color: var(--color-text-muted); }
+  @media (min-width: 960px) {
+    .posts-layout { grid-template-areas: 'list filters'; grid-template-columns: minmax(0, 1fr) var(--sidebar-width); gap: var(--layout-gap); }
+    .posts-aside { position: sticky; top: calc(var(--nav-height) + var(--space-8)); }
+  }
+</style>

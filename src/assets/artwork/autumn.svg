@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+      <rect width="600" height="800" fill="#f0e8d8"/>
+      <path d="M0 550 Q100 480 250 520 Q400 560 600 480 L600 800 L0 800Z" fill="#8a7a5a" opacity="0.3"/>
+      <path d="M0 650 Q150 580 300 620 Q450 660 600 580 L600 800 L0 800Z" fill="#7a6a4a" opacity="0.4"/>
+      <path d="M120 350 L140 320 L130 300 L150 280 L135 270" fill="none" stroke="#8b4513" stroke-width="2"/>
+      <circle cx="140" cy="290" r="8" fill="#c0392b" opacity="0.5"/>
+      <circle cx="155" cy="275" r="7" fill="#c0392b" opacity="0.45"/>
+      <circle cx="130" cy="310" r="9" fill="#c0392b" opacity="0.55"/>
+      <path d="M400 400 L420 370 L410 350 L430 330" fill="none" stroke="#8b4513" stroke-width="2"/>
+      <circle cx="420" cy="340" r="7" fill="#c0392b" opacity="0.5"/>
+      <circle cx="435" cy="325" r="6" fill="#c0392b" opacity="0.4"/>
+      <path d="M300 200 L310 180 L320 190 L330 170" fill="none" stroke="#8b4513" stroke-width="1.5" opacity="0.5"/>
+      <text x="480" y="700" text-anchor="middle" font-family="serif" font-size="36" fill="#2c2c2c" opacity="0.4">秋</text>
+    </svg>

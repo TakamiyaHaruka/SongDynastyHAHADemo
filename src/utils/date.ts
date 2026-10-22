@@ -1,5 +1,3 @@
-import type { CollectionEntry } from 'astro:content'
-
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 
 export function formatDate(dateStr: string): string {
@@ -13,10 +11,4 @@ export function formatDate(dateStr: string): string {
 
 export function toISODatetime(dateStr: string): string {
   return dateStr.replace(' ', 'T')
-}
-
-export function sortPostsByDate(posts: CollectionEntry<'blog'>[]): CollectionEntry<'blog'>[] {
-  return posts
-    .filter((p) => p.data.date)
-    .sort((a, b) => b.data.date!.localeCompare(a.data.date!))
 }

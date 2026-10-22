@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+      <rect width="600" height="800" fill="#f5f0e8"/>
+      <path d="M0 650 Q150 500 300 580 Q450 660 600 520 L600 800 L0 800Z" fill="#7a9e7a" opacity="0.4"/>
+      <path d="M0 700 Q100 620 250 660 Q400 700 600 600 L600 800 L0 800Z" fill="#5a7e5a" opacity="0.5"/>
+      <circle cx="480" cy="120" r="60" fill="#f5e6d0" opacity="0.6"/>
+      <path d="M100 500 Q120 450 140 500 Q160 450 180 500" fill="none" stroke="#8b4513" stroke-width="2"/>
+      <circle cx="130" cy="460" r="12" fill="#e8a0b0" opacity="0.7"/>
+      <circle cx="150" cy="440" r="10" fill="#e8a0b0" opacity="0.6"/>
+      <circle cx="170" cy="455" r="11" fill="#e8a0b0" opacity="0.65"/>
+      <circle cx="140" cy="430" r="8" fill="#e8a0b0" opacity="0.5"/>
+      <circle cx="160" cy="425" r="9" fill="#e8a0b0" opacity="0.55"/>
+      <text x="480" y="700" text-anchor="middle" font-family="serif" font-size="36" fill="#2c2c2c" opacity="0.4">春</text>
+    </svg>

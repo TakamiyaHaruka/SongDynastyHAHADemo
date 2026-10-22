@@ -1,30 +1,55 @@
 @theme {
-  --font-heading: 'DM Serif Display', 'Noto Serif SC', Georgia, serif;
-  --font-body: 'Inter', -apple-system, 'Noto Sans SC', sans-serif;
+  --font-heading: 'Noto Serif SC Variable', 'Songti SC', SimSun, serif;
+  --font-body: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   --color-bg: #faf7f2;
-  --color-bg-alt: #f0ebe3;
-  --color-text: #2c2c2c;
-  --color-text-muted: #8e8e8e;
-  --color-accent: #c0392b;
-  --color-accent-hover: #a93226;
-  --color-surface: #ffffff;
-  --color-border: #e8e2d9;
-  --color-menu-bg: rgba(250, 247, 242, 0.85);
+  --color-bg-alt: #efe9df;
+  --color-text: #302f2a;
+  --color-text-muted: #716b60;
+  --color-accent: #a43f30;
+  --color-accent-hover: #823326;
+  --color-surface: #fdfbf7;
+  --color-border: #ded7ca;
+  --color-menu-bg: rgba(250, 247, 242, 0.94);
+  --color-art-surface: #e6e2d3;
+}
+
+:root {
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --layout-width: 75rem;
+  --sidebar-width: 15rem;
+  --page-gutter: clamp(1.25rem, 4vw, 2rem);
+  --layout-gap: clamp(2rem, 5vw, 4rem);
+  --page-block-space: clamp(2rem, 5vw, 3.5rem);
+  --section-space: clamp(2.25rem, 4.5vw, 3rem);
+  --nav-height: 3.5rem;
+  --text-page: clamp(2rem, 3.8vw, 2.8rem);
+  --text-section: clamp(1.5rem, 2.7vw, 2rem);
+  --text-caption: 0.75rem;
+  --radius-small: 2px;
+  --motion-fast: 160ms ease;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #1a1a1a;
-    --color-bg-alt: #242424;
-    --color-text: #e8e4de;
-    --color-text-muted: #999;
-    --color-accent: #e74c3c;
-    --color-accent-hover: #ff6b5a;
-    --color-surface: #2a2a2a;
-    --color-border: #3a3a3a;
-    --color-menu-bg: rgba(26, 26, 26, 0.88);
+    --color-bg: #1e1e1b;
+    --color-bg-alt: #292a24;
+    --color-text: #e6e1d7;
+    --color-text-muted: #b7b2a5;
+    --color-accent: #dda18f;
+    --color-accent-hover: #f0c2b4;
+    --color-surface: #262722;
+    --color-border: #43453b;
+    --color-menu-bg: rgba(30, 30, 27, 0.94);
+    --color-art-surface: #34382d;
   }
 }
 
@@ -37,11 +62,24 @@
 }
 
 html {
+  color-scheme: light dark;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 5px;
+}
+
+section[id], .prose :is(h2, h3, h4) {
+  scroll-margin-top: 100px;
+}
+
 body {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
   font-family: var(--font-body);
   color: var(--color-text);
   background-color: var(--color-bg);
@@ -50,6 +88,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
+
+#main-content { flex: 1; min-width: 0; }
+button { font: inherit; }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
@@ -76,30 +117,23 @@ img {
 
 ::selection {
   background-color: var(--color-accent);
-  color: white;
+  color: var(--color-bg);
 }
 
-/* Page view transitions */
+/* Keep navigation snapshots opaque and stationary so text does not flash. */
 @view-transition {
   navigation: auto;
 }
 
-::view-transition-old(root) {
-  animation: fade-out 0.2s ease-out;
-}
-
+::view-transition-group(root),
+::view-transition-old(root),
 ::view-transition-new(root) {
-  animation: fade-in 0.3s ease-in;
+  animation: none;
 }
 
-@keyframes fade-out {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-8px); }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -113,34 +147,12 @@ img {
   html { scroll-behavior: auto; }
 }
 
-/* Skeleton loading for slow transitions */
-.skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--color-bg-alt) 25%,
-    var(--color-bg) 50%,
-    var(--color-bg-alt) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
 /* Container */
 .container-main {
-  max-width: 1200px;
+  width: 100%;
+  max-width: var(--layout-width);
   margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .container-main {
-    padding: 0 2rem;
-  }
+  padding-inline: var(--page-gutter);
 }
 
 /* Utility */

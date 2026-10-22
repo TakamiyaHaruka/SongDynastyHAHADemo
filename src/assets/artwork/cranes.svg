@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 550">
+      <rect width="600" height="550" fill="#f5f0e8"/>
+      <path d="M0 350 Q100 300 200 330 Q350 370 500 310 Q550 290 600 320 L600 550 L0 550Z" fill="#7a9e7a" opacity="0.25"/>
+      <path d="M0 430 Q150 380 300 410 Q450 440 600 390 L600 550 L0 550Z" fill="#5a7e5a" opacity="0.35"/>
+      <path d="M250 200 L270 180 L280 190 L300 170 L310 185 L330 165" fill="none" stroke="#5a5a5a" stroke-width="1.5"/>
+      <circle cx="300" cy="280" r="35" fill="#e85050" opacity="0.15"/>
+      <circle cx="310" cy="270" r="30" fill="#e85050" opacity="0.12"/>
+      <path d="M280 320 Q300 290 320 320" fill="none" stroke="#4a7a4a" stroke-width="2"/>
+      <text x="300" y="500" text-anchor="middle" font-family="serif" font-size="24" fill="#2c2c2c" opacity="0.3">仙鹤</text>
+    </svg>

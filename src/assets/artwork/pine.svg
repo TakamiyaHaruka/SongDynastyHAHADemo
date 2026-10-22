@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900">
+      <rect width="600" height="900" fill="#f0e8d8"/>
+      <path d="M0 600 Q100 540 250 570 Q400 600 600 530 L600 900 L0 900Z" fill="#6a8a6a" opacity="0.3"/>
+      <path d="M0 720 Q200 650 400 690 Q500 710 600 660 L600 900 L0 900Z" fill="#5a7a5a" opacity="0.4"/>
+      <path d="M150 400 Q170 350 180 300 Q190 250 200 200" fill="none" stroke="#3a5a3a" stroke-width="3"/>
+      <path d="M180 300 Q210 280 230 300" fill="none" stroke="#3a5a3a" stroke-width="2"/>
+      <path d="M170 350 Q140 330 130 350" fill="none" stroke="#3a5a3a" stroke-width="2"/>
+      <path d="M190 250 Q220 230 240 250" fill="none" stroke="#3a5a3a" stroke-width="1.5"/>
+      <path d="M200 200 Q170 180 160 200" fill="none" stroke="#3a5a3a" stroke-width="1.5"/>
+      <path d="M400 500 Q420 460 430 420 Q440 380 450 340" fill="none" stroke="#3a5a3a" stroke-width="2.5"/>
+      <path d="M430 420 Q460 400 480 420" fill="none" stroke="#3a5a3a" stroke-width="2"/>
+      <path d="M420 460 Q390 440 380 460" fill="none" stroke="#3a5a3a" stroke-width="2"/>
+      <text x="450" y="800" text-anchor="middle" font-family="serif" font-size="28" fill="#2c2c2c" opacity="0.3">双松图</text>
+    </svg>

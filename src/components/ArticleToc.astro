@@ -1,0 +1,93 @@
+---
+import { withBase } from '../utils/paths'
+interface Heading { depth: number; slug: string; text: string }
+interface Props { headings: Heading[] }
+const { headings } = Astro.props
+const minimumDepth = Math.min(...headings.map((heading) => heading.depth))
+---
+
+<aside class="article-aside">
+  <nav class="article-toc" aria-label="本篇目录" data-article-toc>
+    <p class="toc-label">本篇目录</p>
+    <ol>
+      {headings.map((heading, index) => (
+        <li class:list={{ 'toc-nested': heading.depth > minimumDepth }}>
+          <a href={`#${heading.slug}`} aria-current={index === 0 ? 'location' : undefined}>{heading.text}</a>
+        </li>
+      ))}
+    </ol>
+    <a class="toc-back" href={withBase('/posts/')}>返回文章总目 <span aria-hidden="true">↗</span></a>
+  </nav>
+</aside>
+
+<script>
+  function initToc() {
+    const toc = document.querySelector<HTMLElement>('[data-article-toc]')
+    if (!toc || toc.dataset.bound === 'true') return
+    toc.dataset.bound = 'true'
+    const links = Array.from(toc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'))
+    const sections = links.flatMap((link) => {
+      const element = document.getElementById(decodeURIComponent(link.hash.slice(1)))
+      return element ? [{ link, element }] : []
+    })
+    if (!sections.length) return
+    let frame: number | null = null
+    let clickedSection = sections.find((section) => section.link.hash === window.location.hash)
+    for (const section of sections) {
+      section.link.addEventListener('click', () => {
+        clickedSection = section
+        update()
+      })
+    }
+    function update() {
+      frame = null
+      let active = sections[0]
+      for (const section of sections) {
+        if (section.element.getBoundingClientRect().top <= 140) active = section
+      }
+      if (window.scrollY > 0 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+        active = sections[sections.length - 1]
+      }
+      if (clickedSection) active = clickedSection
+      for (const section of sections) {
+        if (section === active) section.link.setAttribute('aria-current', 'location')
+        else section.link.removeAttribute('aria-current')
+      }
+    }
+    const onScroll = () => { if (frame === null) frame = requestAnimationFrame(update) }
+    // A short article may not have enough space below a heading to align it
+    // with the top. Keep the chosen chapter selected until the reader moves.
+    const onUserInput = () => { clickedSection = undefined; onScroll() }
+    const userEvents = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const
+    window.addEventListener('scroll', onScroll, { passive: true })
+    userEvents.forEach((event) => window.addEventListener(event, onUserInput, { passive: true }))
+    update()
+    document.addEventListener('astro:before-swap', () => {
+      window.removeEventListener('scroll', onScroll)
+      userEvents.forEach((event) => window.removeEventListener(event, onUserInput))
+      if (frame !== null) cancelAnimationFrame(frame)
+    }, { once: true })
+  }
+  initToc()
+  document.addEventListener('astro:page-load', initToc)
+</script>
+
+<style>
+  .article-aside { min-width: 0; }
+  .article-toc { position: sticky; top: 104px; padding-left: 1.5rem; border-left: 1px solid var(--color-border); }
+  .toc-label { color: var(--color-text-muted); font-size: 0.7rem; letter-spacing: 0.12em; margin-bottom: 1rem; }
+  ol { list-style: none; margin: 0; padding: 0; }
+  li { margin-bottom: 0.7rem; }
+  .toc-nested { margin-left: 0.85rem; }
+  li a { display: block; padding: 0.2rem 0; font-family: var(--font-heading); font-size: 0.8rem; line-height: 1.75; color: var(--color-text-muted); overflow-wrap: anywhere; }
+  li a[aria-current="location"], li a:hover { color: var(--color-accent); }
+  .toc-back { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--color-border); color: var(--color-text-muted); font-size: 0.7rem; }
+  .toc-back:hover { color: var(--color-accent); }
+  @media (max-width: 1023px) {
+    .article-aside { grid-row: 1; }
+    .article-toc { position: static; padding: 1rem 0; border-left: 0; border-bottom: 1px solid var(--color-border); }
+    ol { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+    li, .toc-nested { margin: 0; }
+    .toc-back { display: none; }
+  }
+</style>

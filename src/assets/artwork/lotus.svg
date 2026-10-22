@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+      <rect width="600" height="500" fill="#f8f4ee"/>
+      <path d="M0 300 Q100 260 200 280 Q350 310 500 260 Q550 240 600 270 L600 500 L0 500Z" fill="#7a9e7a" opacity="0.25"/>
+      <path d="M0 380 Q150 330 300 360 Q450 390 600 340 L600 500 L0 500Z" fill="#5a7e5a" opacity="0.35"/>
+      <path d="M300 180 L300 350" fill="none" stroke="#5a5a5a" stroke-width="1"/>
+      <ellipse cx="300" cy="250" rx="45" ry="25" fill="#e85050" opacity="0.2"/>
+      <ellipse cx="310" cy="240" rx="40" ry="22" fill="#e85050" opacity="0.18"/>
+      <path d="M280 350 Q300 320 320 350" fill="none" stroke="#4a7a4a" stroke-width="2"/>
+      <path d="M100 400 Q110 380 120 400" fill="none" stroke="#4a7a4a" stroke-width="1.5"/>
+      <path d="M480 380 Q490 360 500 380" fill="none" stroke="#4a7a4a" stroke-width="1.5"/>
+      <text x="300" y="450" text-anchor="middle" font-family="serif" font-size="24" fill="#2c2c2c" opacity="0.3">荷花</text>
+    </svg>

@@ -10,13 +10,14 @@
       return;
     }
 
-    const { hasPreview, isPlaying, title } = options;
+    const { hasPreview, isPlaying, title, state = 'idle' } = options;
     button.disabled = !hasPreview;
     button.classList.toggle('is-playing', hasPreview && isPlaying);
     button.setAttribute('aria-pressed', hasPreview && isPlaying ? 'true' : 'false');
+    button.setAttribute('aria-busy', String(state === 'loading'));
 
     if (hasPreview) {
-      const actionLabel = isPlaying ? '暂停' : '播放';
+      const actionLabel = state === 'loading' ? '取消加载' : state === 'error' ? '重试' : isPlaying ? '暂停' : '播放';
       button.setAttribute('aria-label', `${actionLabel} ${title} 的试听片段`);
     } else {
       button.setAttribute('aria-label', '当前曲目暂无试听');
@@ -32,18 +33,48 @@
     const audio = new Audio();
     audio.preload = 'none';
     let fadeTimer = null;
+    let finishFade = null;
+    let disposed = false;
+    let cancelPlay = null;
+    let playVersion = 0;
 
     const clearFade = () => {
       if (fadeTimer !== null) {
         clearInterval(fadeTimer);
         fadeTimer = null;
       }
+      const finish = finishFade;
+      finishFade = null;
+      finish?.();
+    };
+
+    const cancelPending = () => {
+      if (!cancelPlay) return false;
+      const cancel = cancelPlay;
+      cancelPlay = null;
+      playVersion += 1;
+      cancel();
+      audio.pause();
+      return true;
     };
 
     const fadeIn = async () => {
+      if (disposed) return false;
       clearFade();
       audio.volume = 0;
-      await audio.play();
+      const version = ++playVersion;
+      let timeout;
+      try {
+        const cancelled = new Promise(resolve => { cancelPlay = () => resolve(false); });
+        const expired = new Promise((_, reject) => {
+          timeout = setTimeout(() => { audio.pause(); reject(new Error('Preview timed out')); }, 15000);
+        });
+        const played = await Promise.race([audio.play().then(() => true), cancelled, expired]);
+        if (!played || disposed || version !== playVersion) return false;
+      } finally {
+        clearTimeout(timeout);
+        if (version === playVersion) cancelPlay = null;
+      }
 
       let step = 0;
       const interval = FADE_MS / FADE_STEPS;
@@ -56,20 +87,22 @@
           clearFade();
         }
       }, interval);
+      return true;
     };
 
-    const fadeOut = () => {
+    const fadeOut = ({ reset = false } = {}) => {
       return new Promise((resolve) => {
         clearFade();
 
-        if (audio.paused) {
-          audio.currentTime = 0;
+        if (disposed || audio.paused) {
+          if (reset) audio.currentTime = 0;
           audio.volume = 1;
           resolve();
           return;
         }
 
         const startVolume = audio.volume;
+        finishFade = resolve;
         let step = 0;
         const interval = FADE_MS / FADE_STEPS;
 
@@ -78,17 +111,25 @@
           audio.volume = Math.max(startVolume * (1 - step / FADE_STEPS), 0);
 
           if (step >= FADE_STEPS) {
-            clearFade();
             audio.pause();
-            audio.currentTime = 0;
+            if (reset) audio.currentTime = 0;
             audio.volume = 1;
-            resolve();
+            clearFade();
           }
         }, interval);
       });
     };
 
-    return { audio, fadeIn, fadeOut };
+    const dispose = () => {
+      disposed = true;
+      cancelPending();
+      clearFade();
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+    };
+
+    return { audio, fadeIn, fadeOut, cancelPending, dispose };
   };
 
   const initMusicSwitcher = () => {
@@ -106,6 +147,23 @@
       const musicList = root.querySelector('.home-music-list');
       let activeItem = null;
       let currentPreviewUrl = '';
+      let playbackQueue = Promise.resolve();
+      let disposed = false;
+      let cleanupScroll = () => {};
+      const controller = new AbortController();
+      const { signal } = controller;
+      const status = root.querySelector('[data-music-status]');
+      const original = root.querySelector('[data-music-original]');
+
+      // Finish each fade before handling the next click so rapid toggles cannot
+      // cancel a fade timer and leave its promise unresolved.
+      const queuePlayback = (action) => {
+        playbackQueue = playbackQueue.then(() => {
+          if (!disposed) return action();
+        }).catch(() => {
+          if (!disposed) setState('error');
+        });
+      };
 
       if (items.length === 0) {
         return;
@@ -115,6 +173,14 @@
       const { audio, fadeIn, fadeOut } = audioGraph;
       lifecycleState.audioGraphs = lifecycleState.audioGraphs ?? new Set();
       lifecycleState.audioGraphs.add(audioGraph);
+      audioGraph.cleanup = () => {
+        disposed = true;
+        controller.abort();
+        cleanupScroll();
+        audioGraph.dispose();
+        root.dataset.musicPlaying = 'false';
+        root.dataset.musicBound = 'false';
+      };
 
       /* ── Scroll fade mask: reveal top/bottom overflow hints ── */
       if (musicList instanceof HTMLElement) {
@@ -178,6 +244,11 @@
         };
 
         musicList.addEventListener('scroll', onMusicListScroll, { passive: true });
+        cleanupScroll = () => {
+          musicList.removeEventListener('scroll', onMusicListScroll);
+          if (scrollRAF !== null) cancelAnimationFrame(scrollRAF);
+          if (progressHideTimer !== null) clearTimeout(progressHideTimer);
+        };
         applyScrollState();
       }
 
@@ -186,9 +257,29 @@
         return activeItem.querySelector('[data-music-play-toggle]');
       };
 
-      const stopPlayback = async () => {
-        await fadeOut();
-        root.dataset.musicPlaying = 'false';
+      const setState = (state) => {
+        if (disposed || !activeItem) return;
+        const title = activeItem.dataset.title || '当前曲目';
+        const hasPreview = Boolean(activeItem.dataset.previewUrl);
+        if (!hasPreview) state = 'unavailable';
+        root.dataset.musicState = state;
+        root.dataset.musicPlaying = String(state === 'playing');
+        const messages = {
+          idle: `已选择《${title}》，可播放试听片段。`,
+          loading: `正在加载《${title}》的试听…可再次点击取消。`,
+          playing: `正在试听《${title}》的片段。`,
+          paused: `《${title}》已暂停，可继续试听。`,
+          ended: `《${title}》试听结束，可重新播放。`,
+          error: `《${title}》试听加载失败，请重试或前往 Apple Music 听原曲。`,
+          unavailable: `《${title}》暂无试听，可前往 Apple Music 听原曲。`,
+        };
+        if (status) status.textContent = messages[state];
+        updatePlayButton(getActivePlayButton(), { hasPreview, isPlaying: state === 'playing', title, state });
+      };
+
+      const stopPlayback = async ({ reset = false } = {}) => {
+        await fadeOut({ reset });
+        if (!disposed) setState('paused');
       };
 
       const syncPreviewForSelection = (selected) => {
@@ -208,66 +299,64 @@
       };
 
       audio.addEventListener('ended', () => {
-        root.dataset.musicPlaying = 'false';
-        const btn = getActivePlayButton();
-        if (btn instanceof HTMLButtonElement && activeItem instanceof HTMLElement) {
-          updatePlayButton(btn, {
-            hasPreview: Boolean(activeItem.dataset.previewUrl),
-            isPlaying: false,
-            title: activeItem.dataset.title ?? 'Music',
-          });
+        setState('ended');
+      }, { signal });
+      audio.addEventListener('error', () => {
+        audioGraph.cancelPending();
+        audio.pause();
+        setState('error');
+      }, { signal });
+      audio.addEventListener('waiting', () => { if (!audio.paused) setState('loading'); }, { signal });
+      audio.addEventListener('playing', () => setState('playing'), { signal });
+
+      const startPlayback = async () => {
+        const selected = activeItem;
+        setState('loading');
+        try {
+          if (audio.error) audio.load();
+          const played = await fadeIn();
+          if (disposed || activeItem !== selected) return;
+          if (played) setState('playing');
+          else if (root.dataset.musicState !== 'error') setState('paused');
+        } catch {
+          if (!disposed && activeItem === selected) setState('error');
         }
-      });
+      };
 
       /* ── Per-item play button click handlers ── */
       playToggles.forEach((playBtn) => {
-        playBtn.addEventListener('click', async (e) => {
+        playBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const item = playBtn.closest('[data-music-item]');
-          if (!(item instanceof HTMLElement)) return;
+          const cancelLoading = root.dataset.musicState === 'loading' && playBtn.closest('[data-music-item]') === activeItem;
+          audioGraph.cancelPending();
+          queuePlayback(async () => {
+            const item = playBtn.closest('[data-music-item]');
+            if (!(item instanceof HTMLElement)) return;
 
-          const previewUrl = item.dataset.previewUrl || '';
-          if (!previewUrl) return;
+            const previewUrl = item.dataset.previewUrl || '';
+            if (!previewUrl) return;
 
-          // Different item: switch and play in one atomic step — no flicker
-          if (item !== activeItem) {
-            await applyActiveItem(item, { shouldPlay: true });
-            return;
-          }
-
-          // Same item: toggle play/pause
-          if (!audio.paused && currentPreviewUrl === previewUrl) {
-            const btn = getActivePlayButton();
-            if (btn instanceof HTMLButtonElement) {
-              updatePlayButton(btn, {
-                hasPreview: true,
-                isPlaying: false,
-                title: activeItem?.dataset.title ?? 'Music',
-              });
+            // Different item: switch and play in one atomic step — no flicker
+            if (item !== activeItem) {
+              await applyActiveItem(item, { shouldPlay: true });
+              return;
             }
-            await stopPlayback();
-            return;
-          }
 
-          // Resume playing same item
-          try {
-            await fadeIn();
-            root.dataset.musicPlaying = 'true';
-            const btn = getActivePlayButton();
-            if (btn instanceof HTMLButtonElement) {
-              updatePlayButton(btn, {
-                hasPreview: true,
-                isPlaying: true,
-                title: activeItem?.dataset.title ?? 'Music',
-              });
+            // Same item: toggle play/pause
+            if (cancelLoading || (!audio.paused && currentPreviewUrl === previewUrl)) {
+              await stopPlayback();
+              return;
             }
-          } catch {
-            root.dataset.musicPlaying = 'false';
-          }
-        });
+
+            // Resume playing same item
+            await startPlayback();
+          });
+        }, { signal });
       });
 
       const applyActiveItem = async (selected, { scroll = true, shouldPlay = false } = {}) => {
+        if (disposed || activeItem === selected) return;
+
         if (activeItem instanceof HTMLElement && activeItem !== selected) {
           /* ── Reset old item's button immediately ── */
           const oldBtn = getActivePlayButton();
@@ -278,80 +367,40 @@
               title: activeItem.dataset.title ?? 'Music',
             });
           }
-          await stopPlayback();
+          await stopPlayback({ reset: true });
+          if (disposed) return;
         }
 
         items.forEach((item) => {
           item.classList.toggle('is-active', item === selected);
+          item.querySelector('[data-music-select]')?.setAttribute('aria-pressed', String(item === selected));
         });
 
         /* ── Update accent color ── */
         root.style.setProperty('--music-accent', selected.dataset.accent || '194 88% 46%');
 
-        /* ── Update artwork inside the active item ── */
-        const artworkEl = selected.querySelector('[data-music-item-artwork]');
-        if (artworkEl instanceof HTMLElement) {
-          const artworkUrl = selected.dataset.artwork || '';
-          const img = artworkEl.querySelector('img');
-
-          if (artworkUrl && img instanceof HTMLImageElement) {
-            const nextSrc = artworkUrl;
-            const nextRequestId = (artworkEl.__artworkRequestId || 0) + 1;
-            artworkEl.__artworkRequestId = nextRequestId;
-
-            if (img.src === nextSrc || img.src.endsWith(new URL(nextSrc, location.href).pathname)) {
-              img.style.opacity = '1';
-            } else {
-              const preloader = new Image();
-              preloader.crossOrigin = 'anonymous';
-              preloader.referrerPolicy = 'no-referrer';
-
-              preloader.onload = () => {
-                if (artworkEl.__artworkRequestId !== nextRequestId) return;
-                img.style.opacity = '0';
-                img.src = nextSrc;
-                img.alt = selected.dataset.title ? selected.dataset.title + ' 封面' : '';
-                requestAnimationFrame(() => {
-                  if (artworkEl.__artworkRequestId !== nextRequestId) return;
-                  img.style.opacity = '1';
-                });
-              };
-
-              preloader.onerror = () => {
-                if (artworkEl.__artworkRequestId !== nextRequestId) return;
-                img.removeAttribute('src');
-                img.alt = '';
-                img.style.opacity = '1';
-              };
-
-              preloader.src = nextSrc;
-            }
-          }
+        // Each row owns its cover. Fetch an inactive cover only when selected,
+        // and let srcset choose the resolution without a second preloader.
+        const artwork = selected.querySelector('.home-music-item-artwork-img');
+        if (artwork instanceof HTMLImageElement && artwork.dataset.src) {
+          artwork.loading = 'eager';
+          if (artwork.dataset.srcset) artwork.srcset = artwork.dataset.srcset;
+          artwork.src = artwork.dataset.src;
+          delete artwork.dataset.src;
+          delete artwork.dataset.srcset;
         }
 
         syncPreviewForSelection(selected);
+        if (original) {
+          original.setAttribute('href', selected.dataset.link);
+          original.setAttribute('aria-label', `在 Apple Music 打开 ${selected.dataset.title}（新窗口）`);
+        }
+        setState('idle');
 
         if (shouldPlay) {
           const previewUrl = selected.dataset.previewUrl || '';
           if (previewUrl) {
-            if (currentPreviewUrl !== previewUrl) {
-              currentPreviewUrl = previewUrl;
-              audio.src = previewUrl;
-            }
-            try {
-              await fadeIn();
-              root.dataset.musicPlaying = 'true';
-              const btn = getActivePlayButton();
-              if (btn instanceof HTMLButtonElement) {
-                updatePlayButton(btn, {
-                  hasPreview: true,
-                  isPlaying: true,
-                  title: selected.dataset.title ?? 'Music',
-                });
-              }
-            } catch {
-              root.dataset.musicPlaying = 'false';
-            }
+            await startPlayback();
           }
         } else {
           /* ── Reset new item's play button to paused state ── */
@@ -371,11 +420,15 @@
       };
 
       items.forEach((item) => {
-        item.addEventListener('click', () => {
-          applyActiveItem(item);
-        });
+        const select = item.querySelector('[data-music-select]');
+        select?.addEventListener('click', () => {
+          if (activeItem === item) return;
+          audioGraph.cancelPending();
+          queuePlayback(() => applyActiveItem(item));
+        }, { signal });
 
-        item.addEventListener('keydown', (event) => {
+        select?.addEventListener('keydown', (event) => {
+          if (event.altKey || event.ctrlKey || event.metaKey) return;
           const currentIndex = items.indexOf(item);
 
           if (currentIndex < 0) {
@@ -398,9 +451,10 @@
 
           event.preventDefault();
           const target = items[nextIndex];
-          target.focus();
-          applyActiveItem(target);
-        });
+          target.querySelector('[data-music-select]')?.focus();
+          audioGraph.cancelPending();
+          queuePlayback(() => applyActiveItem(target));
+        }, { signal });
       });
 
       const initialSelected = items.find((item) => item.classList.contains('is-active')) || items[0];
@@ -420,9 +474,7 @@
     }
 
     lifecycleState.audioGraphs.forEach((graph) => {
-      graph.audio.pause();
-      graph.audio.removeAttribute('src');
-      graph.audio.load();
+      graph.cleanup();
     });
     lifecycleState.audioGraphs.clear();
   };
@@ -435,6 +487,7 @@
     lifecycleState.bound = true;
     lifecycleState.onBeforeSwap = onBeforeSwap;
     document.addEventListener('astro:before-swap', onBeforeSwap);
+    document.addEventListener('astro:page-load', () => cynosura.initHomeMusicSwitcher?.());
   }
 
   initMusicSwitcherWrapped();

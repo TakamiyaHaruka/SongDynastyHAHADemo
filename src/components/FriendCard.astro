@@ -1,0 +1,22 @@
+---
+import type { Friend } from '../data/friends'
+interface Props { friend: Friend }
+const { friend } = Astro.props
+---
+
+<a href={friend.url} target="_blank" rel="noopener noreferrer" class="friend-card">
+  <span class="friend-avatar" aria-hidden="true">{friend.name.charAt(0)}</span>
+  <div class="friend-copy"><h3 class="friend-name">{friend.name}</h3><p class="friend-desc">{friend.description}</p></div>
+  <span class="friend-arrow" aria-hidden="true">↗</span>
+</a>
+
+<style>
+  .friend-card { display: flex; align-items: start; gap: var(--space-4); min-width: 0; height: 100%; padding: var(--space-5); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); transition: border-color var(--motion-fast), background-color var(--motion-fast); }
+  .friend-card:hover { border-color: var(--color-accent); background: var(--color-bg-alt); color: var(--color-text); }
+  .friend-avatar { display: grid; place-items: center; flex: none; width: 2.75rem; height: 2.75rem; border: 1px solid var(--color-border); border-radius: 50%; background: var(--color-bg-alt); font-family: var(--font-heading); color: var(--color-accent); }
+  .friend-copy { min-width: 0; flex: 1; }
+  .friend-name { font-size: 1.05rem; line-height: 1.6; overflow-wrap: anywhere; }
+  .friend-desc { margin-top: var(--space-2); font-size: 0.8rem; line-height: 1.8; color: var(--color-text-muted); overflow-wrap: anywhere; }
+  .friend-arrow { color: var(--color-text-muted); font-size: 0.8rem; }
+  .friend-card:hover .friend-arrow { color: var(--color-accent); }
+</style>

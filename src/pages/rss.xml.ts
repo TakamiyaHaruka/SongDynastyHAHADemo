@@ -1,24 +1,24 @@
 import rss from '@astrojs/rss'
-import { getCollection } from 'astro:content'
-import { sortPostsByDate } from '../utils/date'
+import { getPublishedPosts } from '../lib/posts'
 import sanitizeHtml from 'sanitize-html'
 import MarkdownIt from 'markdown-it'
+import type { APIContext } from 'astro'
+import { withBase } from '../utils/paths'
 
 const parser = new MarkdownIt()
 
-export async function GET(context: any) {
-  const allPosts = await getCollection('blog')
-  const posts = sortPostsByDate(allPosts)
+export async function GET(context: APIContext) {
+  const posts = await getPublishedPosts()
 
   return rss({
     title: '宋徽宗',
-    description: '大宋天子赵佶 - 御笔亲批奏折与诗词',
-    site: context.site,
+    description: '赵佶的宋代手札 · 书画、茶事与园林',
+    site: new URL(withBase('/'), context.site),
     items: posts.map((post) => ({
       title: post.data.title,
-      pubDate: post.data.date ? new Date(post.data.date + 'T00:00:00Z') : undefined,
+      pubDate: new Date(post.data.date + 'T00:00:00Z'),
       description: post.data.description,
-      link: `/posts/${post.id}/`,
+      link: new URL(withBase(`/posts/${post.id}/`), context.site).toString(),
       content: sanitizeHtml(parser.render(post.body ?? ''), {
         allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
       }),

@@ -7,22 +7,40 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "test": "node --experimental-strip-types --test",
+    "test:e2e": "playwright test",
+    "check": "astro check",
+    "validate": "npm run check && npm test && npm run build && npm run test:e2e",
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^6.0.0",
     "@astrojs/rss": "^4.0.11",
     "@astrojs/sitemap": "^3.3.1",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/noto-serif-sc": "^5.3.1",
     "@tailwindcss/vite": "~4.1.4",
-    "tailwindcss": "~4.1.4",
+    "astro": "^6.0.0",
     "astro-expressive-code": "^0.41.2",
     "markdown-it": "^14.1.0",
     "sanitize-html": "^2.16.0",
     "satori": "^0.12.2",
-    "sharp": "^0.34.2"
+    "sharp": "^0.34.2",
+    "tailwindcss": "~4.1.4"
   },
   "packageManager": "pnpm@10.8.1",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "sharp"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ]
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.11",
+    "@playwright/test": "1.62.1",
+    "@types/markdown-it": "^14.2.0",
+    "@types/node": "^22",
+    "@types/sanitize-html": "^2.16.2",
+    "subset-font": "^2.9.0",
+    "typescript": "^6.0.3"
   }
 }

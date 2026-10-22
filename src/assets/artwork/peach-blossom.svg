@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+      <rect width="600" height="400" fill="#f0e8d8"/>
+      <path d="M0 250 Q100 200 200 230 Q350 270 500 210 Q550 190 600 220 L600 400 L0 400Z" fill="#7a9e7a" opacity="0.3"/>
+      <path d="M0 320 Q150 270 300 300 Q450 330 600 280 L600 400 L0 400Z" fill="#5a7e5a" opacity="0.4"/>
+      <path d="M150 180 Q180 150 200 180 Q220 150 240 180 Q260 150 280 180" fill="none" stroke="#8b4513" stroke-width="1.5"/>
+      <circle cx="180" cy="160" r="6" fill="#e8a0b0" opacity="0.5"/>
+      <circle cx="220" cy="150" r="5" fill="#e8a0b0" opacity="0.45"/>
+      <circle cx="260" cy="155" r="7" fill="#e8a0b0" opacity="0.55"/>
+      <text x="300" y="350" text-anchor="middle" font-family="serif" font-size="24" fill="#2c2c2c" opacity="0.3">桃花流水</text>
+    </svg>

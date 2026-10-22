@@ -12,11 +12,21 @@ const { post } = Astro.props
 const { title, description, date, category } = post.data
 ---
 
-<a href={`${base}posts/${post.id}`} class="post-card">
+<a href={`${base}posts/${post.id}/`} class="post-card">
   <div class="post-card-meta">
     {category && <span class="tag">{category}</span>}
-    {date && <span class="post-card-date">{formatDate(date)}</span>}
+    {date && <time class="post-card-date" datetime={date}>{formatDate(date)}</time>}
   </div>
-  <h3 class="post-card-title">{title}</h3>
+  <h2 class="post-card-title">{title}</h2>
   {description && <p class="post-card-desc">{description}</p>}
 </a>
+
+<style>
+  .post-card { display: flex; flex-direction: column; gap: var(--space-3); border-top: 1px solid var(--color-border); padding: var(--space-6) 0; color: var(--color-text); }
+  .post-card:hover { color: var(--color-text); border-color: var(--color-accent); }
+  .post-card-title { font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.5; font-weight: 400; overflow-wrap: anywhere; transition: color var(--motion-fast); }
+  .post-card:hover .post-card-title { color: var(--color-accent); }
+  .post-card-desc { max-width: 60ch; font-size: 0.9rem; line-height: 1.9; color: var(--color-text-muted); overflow-wrap: anywhere; }
+  .post-card-meta { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+  .post-card-date { font-size: 0.75rem; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+</style>

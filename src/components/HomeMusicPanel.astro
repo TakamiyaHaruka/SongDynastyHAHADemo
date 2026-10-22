@@ -1,329 +1,37 @@
 ---
 import { homeMusicAppleLinks } from '../data/home-music';
+import { loadMusicCards } from '../lib/music-cache';
 import HomeMusicSwitcherScript from './HomeMusicSwitcherScript.astro';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import SectionHeading from './SectionHeading.astro';
+import '../styles/music.css';
 
-interface AppleMusicCard {
-  link: string;
-  previewUrl: string | null;
-  title: string;
-  artist: string;
-  artwork: string | null;
-  artworkSrcSet: string | null;
-  artworkSizes: string | null;
-  artworkThumb: string | null;
-  artworkThumbSrcSet: string | null;
-  artworkThumbSizes: string | null;
-  year: string;
-  genre: string;
-  trackNumber: number | null;
-  trackCount: number | null;
-  releaseType: 'single' | 'album';
-  accent: string;
-}
-
-interface AppleLookupResult {
-  wrapperType?: string;
-  artistName?: string;
-  artworkUrl100?: string;
-  artworkUrl60?: string;
-  collectionId?: number;
-  collectionType?: string;
-  collectionName?: string;
-  copyright?: string;
-  kind?: string;
-  previewUrl?: string;
-  primaryGenreName?: string;
-  releaseDate?: string;
-  trackNumber?: number;
-  trackCount?: number;
-  trackName?: string;
-  isStreamable?: boolean;
-}
-
-interface ParsedAppleIds {
-  trackId: string | null;
-  collectionId: string | null;
-}
-
-const musicAccentPalette = [
-  '36 65% 46%',
-  '28 55% 42%',
-  '14 60% 48%',
-  '45 50% 44%',
-  '20 45% 40%',
-  '340 35% 45%',
-] as const;
-
-const hashToAccent = (seed: string): string => {
-  let hash = 0;
-
-  for (let index = 0; index < seed.length; index += 1) {
-    hash = (hash * 33 + seed.charCodeAt(index)) >>> 0;
-  }
-
-  return musicAccentPalette[hash % musicAccentPalette.length];
-};
-
-const toReleaseYear = (source?: string, copyright?: string): string => {
-  if (!source) {
-    const fromCopyright = copyright?.match(/(19|20)\d{2}/)?.[0];
-    return fromCopyright ?? '年份未知';
-  }
-
-  const parsed = new Date(source);
-
-  if (Number.isNaN(parsed.getTime())) {
-    return '年份未知';
-  }
-
-  return String(parsed.getUTCFullYear());
-};
-
-const toReleaseType = (collectionType?: string, trackCount?: number): 'single' | 'album' => {
-  if (typeof trackCount === 'number') {
-    if (trackCount <= 1) {
-      return 'single';
-    }
-
-    return 'album';
-  }
-
-  if (collectionType?.toLowerCase() === 'album') {
-    return 'album';
-  }
-
-  return 'single';
-};
-
-const parseAppleIds = (link: string): ParsedAppleIds => {
-  try {
-    const parsed = new URL(link);
-    const idInQuery = parsed.searchParams.get('i');
-    const pathSegments = parsed.pathname.split('/').filter(Boolean);
-    const numericSegments = pathSegments.filter((segment) => /^\d+$/.test(segment));
-    const idInPath = parsed.pathname.match(/id(\d+)/)?.[1] ?? null;
-    const plainNumericPathId = numericSegments.length > 0 ? numericSegments[numericSegments.length - 1] : null;
-
-    const collectionId =
-      (plainNumericPathId && /^\d+$/.test(plainNumericPathId) ? plainNumericPathId : null) ??
-      (idInPath && /^\d+$/.test(idInPath) ? idInPath : null);
-    const trackId = idInQuery && /^\d+$/.test(idInQuery)
-      ? idInQuery
-      : collectionId;
-
-    return { trackId, collectionId };
-  } catch {
-    return { trackId: null, collectionId: null };
-  }
-};
-
-const toSizedArtwork = (url: string, size: number): string => {
-  return url.replace(/\d+x\d+bb/g, `${size}x${size}bb`);
-};
-
-const createFallbackCard = (link: string, accent: string, artist = '链接格式暂不支持'): AppleMusicCard => ({
-  link,
-  title: 'Music',
-  artist,
-  previewUrl: null,
-  artwork: null,
-  artworkSrcSet: null,
-  artworkSizes: null,
-  artworkThumb: null,
-  artworkThumbSrcSet: null,
-  artworkThumbSizes: null,
-  year: '年份未知',
-  genre: '流派未标注',
-  trackNumber: null,
-  trackCount: null,
-  releaseType: 'single',
-  accent,
-});
-
-const resolveAppleMusicCard = async (link: string): Promise<AppleMusicCard> => {
-  const { trackId, collectionId } = parseAppleIds(link);
-  const fallbackAccent = hashToAccent(link);
-
-  if (!trackId) {
-    return createFallbackCard(link, fallbackAccent);
-  }
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-
-  try {
-    const trackRequest = fetch(`https://itunes.apple.com/lookup?id=${trackId}&country=cn&entity=song`, {
-      signal: controller.signal,
-    });
-    const collectionRequest = collectionId && collectionId !== trackId
-      ? fetch(`https://itunes.apple.com/lookup?id=${collectionId}&country=cn&entity=album`, {
-          signal: controller.signal,
-        })
-      : null;
-    const [trackResponse, collectionResponse] = await Promise.all([
-      trackRequest,
-      collectionRequest,
-    ]);
-
-    if (!trackResponse.ok || (collectionResponse && !collectionResponse.ok)) {
-      throw new Error('Lookup failed');
-    }
-
-    const trackPayload = await trackResponse.json();
-    const trackResults = Array.isArray(trackPayload?.results) ? (trackPayload.results as AppleLookupResult[]) : [];
-    const collectionPayload = collectionResponse ? await collectionResponse.json() : null;
-    const collectionResults = Array.isArray(collectionPayload?.results) ? (collectionPayload.results as AppleLookupResult[]) : [];
-    const matched =
-      trackResults.find((item) => item.kind === 'song') ??
-      trackResults.find((item) => item.wrapperType === 'track') ??
-      trackResults[0];
-    const collection =
-      collectionResults.find((item) => item.wrapperType === 'collection') ??
-      trackResults.find((item) => item.wrapperType === 'collection') ??
-      trackResults.find((item) => typeof item.trackCount === 'number');
-
-    if (!matched) {
-      throw new Error('No lookup result');
-    }
-
-    const artworkSource = matched.artworkUrl100 ?? matched.artworkUrl60;
-    const artworkCover = artworkSource ? toSizedArtwork(artworkSource, 420) : null;
-    const artworkCoverHi = artworkSource ? toSizedArtwork(artworkSource, 600) : null;
-    const artworkThumb = artworkSource ? toSizedArtwork(artworkSource, 64) : null;
-    const artworkThumbHi = artworkSource ? toSizedArtwork(artworkSource, 120) : null;
-    const trackCount =
-      typeof collection?.trackCount === 'number'
-        ? collection.trackCount
-        : typeof matched.trackCount === 'number'
-          ? matched.trackCount
-          : null;
-    const trackNumber = typeof matched.trackNumber === 'number' ? matched.trackNumber : null;
-    const releaseType = toReleaseType(matched.collectionType ?? collection?.collectionType, trackCount ?? undefined);
-    const year = toReleaseYear(collection?.releaseDate ?? matched.releaseDate, collection?.copyright ?? matched.copyright);
-    const genre = collection?.primaryGenreName ?? matched.primaryGenreName ?? '流派未标注';
-    const title = matched.trackName ?? matched.collectionName ?? 'Music';
-    const artist = matched.artistName ?? '未知艺术家';
-
-    const streamable = matched.isStreamable !== false;
-    const previewUrl = streamable && matched.previewUrl ? matched.previewUrl : null;
-
-    return {
-      link,
-      title,
-      artist,
-      previewUrl,
-      artwork: artworkCover,
-      artworkSrcSet: artworkCover && artworkCoverHi ? `${artworkCover} 420w, ${artworkCoverHi} 600w` : null,
-      artworkSizes: '(max-width: 767px) 82vw, 421px',
-      artworkThumb,
-      artworkThumbSrcSet: artworkThumb && artworkThumbHi ? `${artworkThumb} 64w, ${artworkThumbHi} 120w` : null,
-      artworkThumbSizes: '65px',
-      year,
-      genre,
-      trackNumber,
-      trackCount,
-      releaseType,
-      accent: hashToAccent(`${title}-${artist}`),
-    };
-  } catch {
-    return createFallbackCard(link, fallbackAccent, '封面抓取失败，点击跳转查看');
-  } finally {
-    clearTimeout(timeout);
-  }
-};
-
-/* ── Build-time file cache (24 h TTL) ── */
-
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const cacheDir = resolve('.cache');
-const cacheFile = resolve(cacheDir, 'music-metadata.json');
-
-interface MusicCache {
-  ts: number;
-  cards: Record<string, AppleMusicCard>;
-}
-
-const loadCache = async (): Promise<MusicCache> => {
-  try {
-    const raw = await readFile(cacheFile, 'utf-8');
-    return JSON.parse(raw) as MusicCache;
-  } catch {
-    return { ts: 0, cards: {} };
-  }
-};
-
-const saveCache = async (cache: MusicCache): Promise<void> => {
-  try {
-    await mkdir(cacheDir, { recursive: true });
-    await writeFile(cacheFile, JSON.stringify(cache, null, 2), 'utf-8');
-  } catch {
-    // non-fatal — cache write failure is fine
-  }
-};
-
-const cachedResolve = async (links: string[]): Promise<AppleMusicCard[]> => {
-  const cache = await loadCache();
-  const isStale = Date.now() - cache.ts > CACHE_TTL_MS;
-  const results: AppleMusicCard[] = [];
-  const toFetch: { index: number; link: string }[] = [];
-
-  for (let i = 0; i < links.length; i += 1) {
-    const hit = cache.cards[links[i]];
-
-    if (!isStale && hit) {
-      results[i] = hit;
-    } else {
-      toFetch.push({ index: i, link: links[i] });
-    }
-  }
-
-  if (toFetch.length > 0) {
-    const fresh = await Promise.all(toFetch.map(({ link }) => resolveAppleMusicCard(link)));
-
-    for (let j = 0; j < toFetch.length; j += 1) {
-      results[toFetch[j].index] = fresh[j];
-      cache.cards[toFetch[j].link] = fresh[j];
-    }
-
-    cache.ts = Date.now();
-    await saveCache(cache);
-  }
-
-  return results;
-};
-
-const musicCards = await cachedResolve(homeMusicAppleLinks);
+const musicCards = await loadMusicCards(homeMusicAppleLinks);
 ---
 
-<section class="home-music-panel" style="padding: 4rem 0;">
+<section class="home-music-panel section-block" aria-labelledby="music-title">
   <div class="home-music-head">
-    <p class="section-label">雅乐</p>
-    <h2 class="section-heading">朕的宫廷雅乐</h2>
-    <div class="accent-bar"></div>
+    <SectionHeading label="四 · 听" title="案头听音" id="music-title" />
+    <p class="home-music-description">书画之外，也听当下。<br />几支常听的曲子，伴一段案头时光。</p>
   </div>
 
   {
     musicCards.length > 0 ? (
       <div class="home-music-layout" data-home-music style={`--music-accent: ${musicCards[0].accent};`}>
         <div class="home-music-list-shell">
-          <ul class="home-music-list" aria-label="宫廷雅乐曲目">
+          <ul class="home-music-list" aria-label="案头听音曲目">
             {musicCards.map((item, index) => {
               const isActive = index === 0;
               const hasPreview = Boolean(item.previewUrl);
+              const artwork = item.artwork?.replace(/\d+x\d+bb/g, '180x180bb');
+              const artworkSrcSet = artwork && item.artworkSrcSet ? `${artwork} 180w, ${item.artworkSrcSet}` : undefined;
               return (
                 <li>
                   <div
                     class:list={['home-music-list-item', isActive && 'is-active']}
-                    role="button"
-                    tabindex="0"
-                    aria-selected={isActive ? 'true' : 'false'}
                     data-music-item
                     data-link={item.link}
                     data-title={item.title}
                     data-artist={item.artist}
-                    data-artwork={item.artwork ?? ''}
                     data-year={item.year}
                     data-genre={item.genre}
                     data-release-type={item.releaseType}
@@ -332,14 +40,21 @@ const musicCards = await cachedResolve(homeMusicAppleLinks);
                     data-track-count={item.trackCount !== null ? String(item.trackCount) : ''}
                     data-accent={item.accent}
                   >
-                    <div class="home-music-item-artwork" data-music-item-artwork>
-                      <div class="home-music-item-artwork-cover">
+                    <button type="button" class="home-music-select" data-music-select aria-pressed={isActive ? 'true' : 'false'} aria-label={`选择曲目：${item.title}`}>
+                    <span class="home-music-item-artwork" data-music-item-artwork>
+                      <span class="home-music-item-artwork-cover">
                         {item.artwork ? (
                           <img
                             class="home-music-item-artwork-img"
-                            src={item.artwork}
+                            src={isActive ? artwork : undefined}
+                            srcset={isActive ? artworkSrcSet : undefined}
+                            sizes="(max-width: 639px) 96px, 180px"
+                            data-src={isActive ? undefined : artwork}
+                            data-srcset={isActive ? undefined : artworkSrcSet}
                             alt={`${item.title} 封面`}
-                            loading="eager"
+                            loading="lazy"
+                            width="180"
+                            height="180"
                             decoding="async"
                             crossorigin="anonymous"
                             referrerpolicy="no-referrer"
@@ -347,8 +62,8 @@ const musicCards = await cachedResolve(homeMusicAppleLinks);
                         ) : (
                           <span class="home-music-item-artwork-fallback" aria-hidden="true">AM</span>
                         )}
-                      </div>
-                    </div>
+                      </span>
+                    </span>
 
                     <span class="home-music-item-info">
                       <span class="home-music-list-title">{item.title}</span>
@@ -356,8 +71,10 @@ const musicCards = await cachedResolve(homeMusicAppleLinks);
                       <span class="home-music-item-meta">
                         <span class="home-music-item-meta-chip">{item.year}</span>
                         <span class="home-music-item-meta-chip">{item.genre}</span>
+                        {!hasPreview && <span class="home-music-item-meta-chip">暂无试听</span>}
                       </span>
                     </span>
+                    </button>
 
                     <button
                       type="button"
@@ -384,11 +101,27 @@ const musicCards = await cachedResolve(homeMusicAppleLinks);
             <span class="home-music-list-progress-bar"></span>
           </div>
         </div>
+        <div class="home-music-footer">
+          <p class="home-music-status" data-music-status role="status" aria-live="polite" aria-atomic="true">{musicCards[0].previewUrl ? `已选择《${musicCards[0].title}》，可播放试听片段。` : `《${musicCards[0].title}》暂无试听，可前往 Apple Music 听原曲。`}</p>
+          <a class="home-music-original text-link" data-music-original href={musicCards[0].link} target="_blank" rel="noopener noreferrer" aria-label={`在 Apple Music 打开 ${musicCards[0].title}（新窗口）`}>在 Apple Music 听原曲 <span aria-hidden="true">↗</span></a>
+          <p class="home-music-keyboard-help">方向键选曲 · Enter / 空格选择 · Tab 切换操作</p>
+        </div>
       </div>
     ) : (
-      <p class="home-music-empty">先把 Apple Music 链接填到数据里，音乐卡片就会自动生成。</p>
+      <p class="home-music-empty">案头尚静，曲目稍后奉上。</p>
     )
   }
 </section>
 
 {musicCards.length > 0 && <HomeMusicSwitcherScript />}
+
+<style>
+  .home-music-panel { overflow: visible; }
+  .home-music-description { color: var(--color-text-muted); font-family: var(--font-heading); font-size: 0.85rem; line-height: 1.9; }
+  .home-music-list { max-height: 430px; }
+  .home-music-list-artist, .home-music-list-item.is-active .home-music-list-artist, .home-music-item-meta-chip { color: var(--color-text-muted); }
+  .home-music-item-play:focus-visible { opacity: 1; pointer-events: auto; }
+  @media (min-width: 1024px) {
+    .home-music-panel { display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); gap: var(--layout-gap); }
+  }
+</style>

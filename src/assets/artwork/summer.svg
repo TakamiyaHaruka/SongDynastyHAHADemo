@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+      <rect width="600" height="800" fill="#e8e0d0"/>
+      <path d="M0 500 Q100 450 200 480 Q350 520 450 460 Q550 400 600 440 L600 800 L0 800Z" fill="#5a8a6a" opacity="0.3"/>
+      <path d="M0 600 Q150 540 300 580 Q450 620 600 560 L600 800 L0 800Z" fill="#4a7a5a" opacity="0.4"/>
+      <ellipse cx="300" cy="480" rx="40" ry="25" fill="#e85050" opacity="0.25"/>
+      <ellipse cx="320" cy="470" rx="35" ry="22" fill="#e85050" opacity="0.2"/>
+      <path d="M280 520 Q300 480 320 520" fill="none" stroke="#4a7a4a" stroke-width="2"/>
+      <circle cx="200" cy="300" r="50" fill="#f5d060" opacity="0.15"/>
+      <path d="M150 600 L160 580 L155 560 L165 540" fill="none" stroke="#4a7a4a" stroke-width="2"/>
+      <path d="M400 650 L410 620 L405 600 L415 580" fill="none" stroke="#4a7a4a" stroke-width="2"/>
+      <text x="480" y="700" text-anchor="middle" font-family="serif" font-size="36" fill="#2c2c2c" opacity="0.4">夏</text>
+    </svg>

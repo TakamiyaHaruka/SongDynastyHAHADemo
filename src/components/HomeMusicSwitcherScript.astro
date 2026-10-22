@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../utils/paths'
 ---
 
-<script is:inline src="/SongDynastyHAHADemo/js/home-music-switcher.js" data-astro-rerun defer data-cfasync="false"></script>
+<script is:inline src={withBase('/js/home-music-switcher.js')} data-astro-rerun defer data-cfasync="false"></script>

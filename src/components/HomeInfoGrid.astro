@@ -1,5 +1,6 @@
 ---
 import HomeInfoIcon from './HomeInfoIcon.astro'
+import SectionHeading from './SectionHeading.astro'
 import type { InfoItem } from '../data/home-info'
 
 interface Props {
@@ -12,10 +13,8 @@ const { label, title, items } = Astro.props
 ---
 
 <section class="info-section defer-offscreen">
-  <div class="container-main">
-    <div class="section-label">{label}</div>
-    <h2 class="section-heading">{title}</h2>
-    <div class="accent-bar"></div>
+  <div>
+    <SectionHeading label={label} title={title} />
     <div class="info-grid">
       {items.map((item) => (
         <div class="info-card">
@@ -34,7 +33,7 @@ const { label, title, items } = Astro.props
 
 <style>
   .info-section {
-    padding: 4rem 0;
+    padding: 0;
   }
 
   .info-grid {
@@ -42,6 +41,10 @@ const { label, title, items } = Astro.props
     grid-template-columns: 1fr;
     gap: 1rem;
   }
+  .info-card { display: flex; align-items: start; gap: var(--space-4); min-width: 0; padding: var(--space-5); border: 1px solid var(--color-border); background: var(--color-surface); }
+  .info-card-icon { display: grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; color: var(--color-accent); background: var(--color-bg-alt); }
+  .info-card-title { font-family: var(--font-heading); font-size: 1.05rem; line-height: 1.5; margin-bottom: var(--space-2); }
+  .info-card-desc { color: var(--color-text-muted); font-size: 0.8rem; line-height: 1.8; overflow-wrap: anywhere; }
 
   @media (min-width: 640px) {
     .info-grid {

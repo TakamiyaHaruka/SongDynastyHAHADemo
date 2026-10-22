@@ -1,0 +1,11 @@
+---
+interface Props { text?: string; label?: string }
+const { text = '赵佶', label = `${text}字印` } = Astro.props
+---
+
+<span class="name-seal" role="img" aria-label={label}><span aria-hidden="true">{text}</span></span>
+
+<style>
+  .name-seal { display: inline-grid; place-items: center; flex-shrink: 0; width: 44px; height: 52px; background: #a43f30; color: #fff9ee; border: 3px double #fff9ee; outline: 1px solid #a43f30; font-family: var(--font-heading); font-size: 1.15rem; line-height: 1.15; }
+  .name-seal span { writing-mode: vertical-rl; letter-spacing: 0.08em; }
+</style>

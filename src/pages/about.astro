@@ -1,5 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import HomeInfoGrid from '../components/HomeInfoGrid.astro'
+import NameSeal from '../components/NameSeal.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import { homeSkillItems, homeDeviceItems } from '../data/home-info'
 
 interface Milestone {
   year: string
@@ -29,10 +33,8 @@ const colors = [
 ---
 
 <BaseLayout title="关于" currentPath="/about">
-  <div class="container-main" style="padding-top: 3rem; padding-bottom: 3rem;">
-    <div class="section-label">关于朕</div>
-    <h1 class="section-heading">宋徽宗 赵佶</h1>
-    <div class="accent-bar"></div>
+  <div class="container-main page-shell">
+    <SectionHeading label="关于朕" title="宋徽宗 赵佶" level="h1" variant="page"><NameSeal slot="leading" /></SectionHeading>
 
     <!-- Bio -->
     <div class="about-bio">
@@ -43,8 +45,8 @@ const colors = [
     </div>
 
     <!-- Artistic Skills -->
-    <section class="about-section">
-      <h2 class="section-heading" style="font-size: 1.5rem;">艺术造诣</h2>
+    <section class="about-section" id="arts">
+      <HomeInfoGrid label="艺事" title="笔墨与闲情" items={homeSkillItems} />
       <div class="tech-grid">
         {['瘦金体书法', '工笔花鸟', '山水画', '诗词歌赋', '茶道', '园林设计', '金石鉴藏', '音律', '蹴鞠', '道教'].map((tech) => (
           <span class="tech-tag">{tech}</span>
@@ -52,9 +54,13 @@ const colors = [
       </div>
     </section>
 
+    <section class="about-section" id="study">
+      <HomeInfoGrid label="书房" title="文房雅器" items={homeDeviceItems} />
+    </section>
+
     <!-- Milestones -->
     <section class="about-section">
-      <h2 class="section-heading" style="font-size: 1.5rem;">生平大事</h2>
+      <SectionHeading title="生平大事" />
       <div class="milestones">
         {milestones.map((m) => (
           <div class="milestone">
@@ -70,16 +76,13 @@ const colors = [
 
     <!-- Color Palette -->
     <section class="about-section">
-      <h2 class="section-heading" style="font-size: 1.5rem;">御用色谱</h2>
+      <SectionHeading title="御用色谱" description="轻触色块，抄一抹宋色。" />
       <div class="color-grid">
         {colors.map((c) => (
-          <div class="color-swatch" data-hex={c.hex}>
-            <div class="color-preview" style={`background: ${c.hex};`}></div>
-            <div class="color-info">
-              <div class="color-name">{c.name}</div>
-              <div class="color-hex">{c.hex}</div>
-            </div>
-          </div>
+          <button type="button" class="color-swatch" data-hex={c.hex} aria-label={`复制${c.name}色值 ${c.hex}`}>
+            <span class="color-preview" style={`background: ${c.hex};`}></span>
+            <span class="color-info"><span class="color-name">{c.name}</span><span class="color-hex" aria-live="polite">{c.hex}</span></span>
+          </button>
         ))}
       </div>
     </section>
@@ -91,7 +94,7 @@ const colors = [
     max-width: 640px;
     font-size: 1.05rem;
     line-height: 1.8;
-    margin-bottom: 3rem;
+    margin-bottom: var(--section-space);
   }
 
   .about-bio p {
@@ -99,7 +102,7 @@ const colors = [
   }
 
   .about-section {
-    margin-bottom: 3rem;
+    margin-bottom: var(--section-space);
   }
 
   .tech-grid {
@@ -117,7 +120,7 @@ const colors = [
     border: 1px solid var(--color-border);
     border-radius: 2px;
     color: var(--color-text);
-    transition: all 0.2s ease;
+    transition: border-color var(--motion-fast), color var(--motion-fast);
     cursor: default;
   }
 
@@ -176,23 +179,33 @@ const colors = [
   }
 
   .color-swatch {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0;
+    text-align: left;
+    color: var(--color-text);
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 2px;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: border-color var(--motion-fast);
   }
 
   .color-swatch:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--color-accent);
   }
 
   .color-preview {
+    display: block;
+    width: 100%;
     height: 80px;
   }
 
   .color-info {
+    display: flex;
+    flex-direction: column;
     padding: 0.75rem;
   }
 
@@ -210,19 +223,5 @@ const colors = [
 </style>
 
 <script>
-  document.querySelectorAll('.color-swatch').forEach((el) => {
-    el.addEventListener('click', () => {
-      const hex = el.getAttribute('data-hex')
-      if (hex) {
-        navigator.clipboard.writeText(hex).then(() => {
-          const info = el.querySelector('.color-hex')
-          if (info) {
-            const orig = info.textContent
-            info.textContent = '已复制!'
-            setTimeout(() => { info.textContent = orig }, 1500)
-          }
-        })
-      }
-    })
-  })
+  import '../scripts/color-swatches'
 </script>

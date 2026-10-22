@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+      <rect width="600" height="800" fill="#e8e4e0"/>
+      <path d="M0 600 Q200 550 400 580 Q500 600 600 560 L600 800 L0 800Z" fill="#d0ccc8" opacity="0.5"/>
+      <path d="M250 300 L270 250 L260 200 L280 150" fill="none" stroke="#5a5a5a" stroke-width="3"/>
+      <path d="M260 200 L290 180" fill="none" stroke="#5a5a5a" stroke-width="2"/>
+      <path d="M270 250 L240 230" fill="none" stroke="#5a5a5a" stroke-width="2"/>
+      <path d="M280 150 L310 130" fill="none" stroke="#5a5a5a" stroke-width="1.5"/>
+      <circle cx="280" cy="140" r="20" fill="#fff" opacity="0.3"/>
+      <circle cx="290" cy="180" r="15" fill="#fff" opacity="0.25"/>
+      <circle cx="240" cy="230" r="12" fill="#fff" opacity="0.2"/>
+      <path d="M400 350 L420 300 L415 270" fill="none" stroke="#5a5a5a" stroke-width="2.5"/>
+      <path d="M415 270 L440 250" fill="none" stroke="#5a5a5a" stroke-width="2"/>
+      <circle cx="415" cy="265" r="18" fill="#fff" opacity="0.3"/>
+      <circle cx="440" cy="250" r="12" fill="#fff" opacity="0.25"/>
+      <line x1="100" y1="680" x2="120" y2="670" stroke="#8a8a8a" stroke-width="0.5" opacity="0.3"/>
+      <line x1="200" y1="700" x2="230" y2="690" stroke="#8a8a8a" stroke-width="0.5" opacity="0.3"/>
+      <line x1="400" y1="670" x2="440" y2="660" stroke="#8a8a8a" stroke-width="0.5" opacity="0.3"/>
+      <text x="480" y="700" text-anchor="middle" font-family="serif" font-size="36" fill="#2c2c2c" opacity="0.4">冬</text>
+    </svg>

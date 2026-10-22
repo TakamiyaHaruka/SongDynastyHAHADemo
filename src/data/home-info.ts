@@ -18,6 +18,6 @@ export const homeDeviceItems: InfoItem[] = [
   { icon: 'brush', name: '宣和笔', description: '湖州紫毫笔，锋长而健，挥洒自如' },
   { icon: 'code', name: '澄心堂纸', description: '南唐遗珍，肤如卵膜，坚洁如玉' },
   { icon: 'globe', name: '龙团凤饼', description: '北苑贡茶，碾罗成末，点试清芬' },
-  { icon: 'terminal', name: '汝窑天青', description: '雨过天青云破处，这般颜色做将来' },
-  { icon: 'camera', name: '瑞鹤图卷', description: '御笔亲绘，群鹤翔于端门之上' },
+  { icon: 'watch', name: '汝窑天青', description: '雨过天青云破处，这般颜色做将来' },
+  { icon: 'camera-device', name: '瑞鹤图卷', description: '御笔亲绘，群鹤翔于端门之上' },
 ]

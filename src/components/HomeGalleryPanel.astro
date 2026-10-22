@@ -1,52 +1,68 @@
 ---
-import { Image } from 'astro:assets'
 import { homeGalleryItems, homeGallerySeasons } from '../data/home-gallery'
+import SectionHeading from './SectionHeading.astro'
+import GalleryViewer from './GalleryViewer.astro'
+const featured = [homeGallerySeasons[0], homeGalleryItems[2], homeGallerySeasons[3]]
+const remaining = [...homeGallerySeasons, ...homeGalleryItems].filter((item) => !featured.includes(item))
 ---
 
-<section class="gallery-section defer-offscreen">
-  <div class="container-main">
-    <div class="section-label">相册</div>
-    <h2 class="section-heading">四季掠影</h2>
-    <div class="accent-bar"></div>
-
-    <!-- Season Grid -->
-    <div class="season-grid">
-      {homeGallerySeasons.map((season) => (
-        <div class="season-item">
-          <img
-            src={season.src}
-            alt={season.alt}
-            loading="lazy"
-            width="600"
-            height="800"
-          />
-          <span class="season-label">{season.label}</span>
-        </div>
+<section class="gallery-section" id="gallery" aria-labelledby="gallery-title">
+  <SectionHeading label="一 · 画" title="画间四时" id="gallery-title"><p slot="actions">随四时，入画中。</p></SectionHeading>
+  <div class="featured-gallery">
+    {featured.map((item, index) => (
+      <figure class="gallery-work">
+        <button class="gallery-frame" type="button" data-gallery-open aria-label={`查看完整画作：${item.alt}`} aria-haspopup="dialog" aria-controls="gallery-viewer"><img src={item.src} alt={item.alt} loading={index === 0 ? 'eager' : 'lazy'} fetchpriority={index === 0 ? 'high' : 'auto'} decoding="async" width={item.width} height={item.height} /><span class="gallery-view-hint" aria-hidden="true">展卷 ↗</span></button>
+        <figcaption><span>{item.alt}</span><span class="work-number" aria-hidden="true">0{index + 1}</span></figcaption>
+      </figure>
+    ))}
+  </div>
+  <details class="gallery-more">
+    <summary><span class="gallery-more-closed">展阅其余画作 · {remaining.length} 幅</span><span class="gallery-more-open">收起画册</span><span class="gallery-toggle" aria-hidden="true">＋</span></summary>
+    <div class="extended-gallery">
+      {remaining.map((item) => (
+        <figure class="gallery-work">
+          <button class="gallery-frame" type="button" data-gallery-open aria-label={`查看完整画作：${item.alt}`} aria-haspopup="dialog" aria-controls="gallery-viewer"><img src={item.src} alt={item.alt} loading="lazy" decoding="async" width={item.width} height={item.height} /><span class="gallery-view-hint" aria-hidden="true">展卷 ↗</span></button>
+          <figcaption>{item.alt}</figcaption>
+        </figure>
       ))}
     </div>
-
-    <!-- Masonry Gallery -->
-    <div style="margin-top: 2.5rem;">
-      <h3 class="section-heading" style="font-size: 1.5rem;">更多照片</h3>
-      <div class="gallery-masonry">
-        {homeGalleryItems.map((item) => (
-          <div class="gallery-item">
-            <img
-              src={item.src}
-              alt={item.alt}
-              loading="lazy"
-              width="600"
-              height="800"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
+  </details>
+  <GalleryViewer />
 </section>
 
 <style>
-  .gallery-section {
-    padding: 4rem 0;
+  .gallery-section { padding-block: var(--section-space); scroll-margin-top: calc(var(--nav-height) + var(--space-8)); }
+  .featured-gallery { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: var(--space-6); }
+  .gallery-work { margin: 0; min-width: 0; }
+  .gallery-frame { display: block; position: relative; width: 100%; padding: 0; border: 0; border-radius: 0; overflow: hidden; background: var(--color-bg-alt); aspect-ratio: 1.9; cursor: zoom-in; }
+  .featured-gallery .gallery-frame { height: clamp(160px, 15vw, 210px); aspect-ratio: auto; }
+  .gallery-frame img { width: 100%; height: 100%; object-fit: cover; object-position: center 60%; transition: transform 0.5s ease; }
+  .gallery-work:hover img { transform: scale(1.025); }
+  .gallery-frame:focus-visible img { transform: scale(1.025); }
+  .gallery-view-hint { position: absolute; right: var(--space-3); bottom: var(--space-3); padding: 0.15rem 0.55rem; background: var(--color-surface); color: var(--color-text); font-size: 0.7rem; opacity: 0; transition: opacity var(--motion-fast); }
+  .gallery-frame:hover .gallery-view-hint, .gallery-frame:focus-visible .gallery-view-hint { opacity: 1; }
+  @media (hover: none) { .gallery-view-hint { opacity: 1; } }
+  figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; padding-top: 0.8rem; font-family: var(--font-heading); font-size: 0.9rem; }
+  .work-number { font-family: var(--font-body); color: var(--color-text-muted); font-size: 0.65rem; }
+  .gallery-more { margin-top: 1.35rem; }
+  summary { display: flex; align-items: center; justify-content: center; gap: 1.5rem; padding: 0.6rem; width: fit-content; margin: 0 auto; cursor: pointer; font-size: 0.75rem; color: var(--color-text-muted); list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--color-accent); }
+  .gallery-more-open { display: none; }
+  .gallery-more[open] .gallery-more-closed { display: none; }
+  .gallery-more[open] .gallery-more-open { display: inline; }
+  .gallery-more[open] .gallery-toggle { transform: rotate(45deg); }
+  .gallery-toggle { display: inline-block; transition: transform 0.2s ease; }
+  .extended-gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem; padding: 1.75rem 0; }
+  .extended-gallery .gallery-frame { aspect-ratio: 3 / 4; }
+  .extended-gallery .gallery-frame img { object-position: center; }
+  @media (max-width: 639px) {
+    .featured-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5) var(--space-4); }
+    .featured-gallery .gallery-work:first-child { grid-column: 1 / -1; }
+    .featured-gallery .gallery-frame { height: 132px; }
+    .featured-gallery .gallery-work:first-child .gallery-frame { height: 180px; }
+    figcaption { gap: var(--space-2); font-size: 0.8rem; }
+    .work-number { flex: none; }
+    .extended-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 </style>

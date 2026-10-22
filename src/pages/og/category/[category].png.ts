@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro'
-import { getCollection } from 'astro:content'
+import { getPublishedPosts } from '../../../lib/posts'
 import { getCategoryItems } from '../../../utils/categories'
 import { generateOgImage } from '../../../utils/og'
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog')
+  const posts = await getPublishedPosts()
   const categories = getCategoryItems(posts)
   return categories.map((cat) => ({
     params: { category: cat.name },

@@ -3,62 +3,49 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import HomeHeroFeature from '../components/HomeHeroFeature.astro'
 import HomeHeroPanel from '../components/HomeHeroPanel.astro'
 import ArticleTimeline from '../components/ArticleTimeline.astro'
-import HomeInfoGrid from '../components/HomeInfoGrid.astro'
 import HomeProjectPanel from '../components/HomeProjectPanel.astro'
 import HomeMusicPanel from '../components/HomeMusicPanel.astro'
 import HomeGalleryPanel from '../components/HomeGalleryPanel.astro'
-import { homeSkillItems, homeDeviceItems } from '../data/home-info'
-import { getCollection } from 'astro:content'
-import { sortPostsByDate } from '../utils/date'
+import { getPublishedPosts } from '../lib/posts'
+import { homeHeroArtwork } from '../data/home-artwork'
 
-const allPosts = await getCollection('blog')
-const posts = sortPostsByDate(allPosts)
+const posts = await getPublishedPosts()
 ---
 
 <BaseLayout title="首页" currentPath="/">
-  <HomeHeroFeature />
-
-  <!-- Two-column layout: main + sidebar (desktop) -->
-  <div class="home-layout container-main">
-    <div class="home-main">
+  <link slot="head" rel="preload" as="image" href={homeHeroArtwork.src} fetchpriority="high" />
+  <div class="home-exhibition container-main">
+    <HomeHeroFeature />
+    <HomeGalleryPanel />
+    <div class="home-reading section-block">
       <ArticleTimeline posts={posts} />
-      <HomeInfoGrid label="技能" title="技术栈" items={homeSkillItems} />
-      <HomeProjectPanel />
-      <HomeInfoGrid label="设备" title="日常设备" items={homeDeviceItems} />
-      <HomeMusicPanel />
-      <HomeGalleryPanel />
+      <aside class="home-profile" aria-label="关于赵佶"><HomeHeroPanel /></aside>
     </div>
-    <div class="home-sidebar">
-      <HomeHeroPanel />
-    </div>
+    <HomeProjectPanel />
+    <HomeMusicPanel />
   </div>
 </BaseLayout>
 
 <style>
-  .home-layout {
+  .home-exhibition { padding-top: var(--space-8); }
+  .home-reading {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 2rem;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    gap: var(--layout-gap);
   }
 
   @media (min-width: 1024px) {
-    .home-layout {
-      grid-template-columns: 1fr 280px;
+    .home-reading {
+      grid-template-columns: minmax(0, 1fr) 250px;
     }
   }
 
-  .home-main {
-    min-width: 0;
-  }
-
-  .home-sidebar {
+  .home-profile {
     display: none;
   }
 
   @media (min-width: 1024px) {
-    .home-sidebar {
+    .home-profile {
       display: block;
     }
   }
