@@ -17,6 +17,7 @@
 - `navigation.css`：导航、移动菜单、页脚。菜单事件由 `src/scripts/navigation.ts` 管理。
 - `editorial.css`：公共页面留白、分区节奏与跳转正文入口。
 - `music.css`：只由 `HomeMusicPanel.astro` 引入。
+- 主题由 `public/js/theme-init.js` 在正文解析前初始化，`ThemePicker.astro` 提供浅色、深色与跟随系统选择。新增颜色使用主题变量，不直接根据系统媒体查询绕过手动选择。
 - `prose.css`：只由文章详情页引入。
 - 各 Astro 组件的 style 块：组件自身的卡片、网格与响应式规则。不要再向公共文件追加旧版首页、时间线或画廊样式。
 
@@ -35,17 +36,17 @@
 
 执行 `npm run check`、`npm test`、`npm run build`。修改布局后检查首页、文章总目、分类、文章详情、友人、关于，在 320 / 390 / 768 / 1440px 和明暗主题下验证溢出、标题层级与交互。新增 CSS 还需确认没有让音乐或正文样式重新进入不相关页面。
 
-`npm run test:e2e` 在生产构建上自动检查上述关键流程与主题、宽度组合。首次使用需安装 Playwright Chromium；`npm run validate` 包含全部检查，CI 在浏览器回归通过后部署。
+`npm run test:e2e` 在生产构建上自动检查上述关键流程与主题、宽度组合，并检查弱网首屏与预热导航预算。首次使用需安装 Playwright Chromium；`npm run validate` 还包含站内链接和资源预算，CI 在全部检查通过后部署。
 
 ## 文章发布
 
-- `src/lib/post-schema.ts` 校验标题、日期和草稿状态，并兼容旧版 `pubDate`。
+- `src/lib/post-schema.ts` 校验标题、展示日期、本站收录日期、更新日期和草稿状态，并兼容旧版展示字段 `pubDate`。RSS 与 BlogPosting 元数据使用 `publishedAt`，展示与时间线使用 `date`。
 - 公共页面、RSS 和 OG 路由统一调用 `getPublishedPosts()`，避免自行调用 `getCollection()` 漏出草稿。
-- `templates/post.md` 是新文章起点。发布前补齐日期并移除草稿状态；未发布文章不生成详情、分类或分享图。
+- `templates/post.md` 是新文章起点，`pnpm post:new <标识>` 可创建草稿并检查重名。发布前补齐 `publishedAt` 并移除草稿状态；未发布文章不生成详情、分类或分享图。
 
 ## 字体与画作资源
 
-- `integrations/site-fonts.mjs` 在开发、检查及构建前，扫描 `src/`、`public/js/` 和音乐资料缓存，按其中出现的字符生成 Inter 与 Noto Serif SC 字体子集；保留可变字重及 Unicode 分段加载。开发时新增或删除文字会自动更新，无须手工维护汉字清单。
+- `integrations/site-fonts.mjs` 在开发、检查及构建前先准备音乐快照，再扫描 `src/`、`public/js/`、音乐资料缓存和当次快照，按其中出现的字符生成 Inter 与 Noto Serif SC 字体子集。页面从同一份 `.cache/music-build.json` 读取音乐，避免冷缓存或缓存写入失败造成字库与歌名不同步；保留逐首长期缓存的失败重试规则。开发时新增或删除文字会自动更新，无须手工维护汉字清单。
 - 生成字体、CSS 及清单位于 `.cache/site-fonts/`，缺失时自动创建，不提交生成文件。字体内容作为缓存键的一部分，字体包或文字变化后会生成新的资源地址。构建环境需要安装开发依赖中的 `subset-font`。
 - `BaseLayout.astro` 统一加载生成的字体 CSS；字体文件独立输出，避免小字体被内联到每页共享的 CSS。字体授权文件位于 `public/fonts/`，随站点一起发布。
 - 画作 SVG 源文件位于 `src/assets/artwork/`，在 `src/data/home-gallery.ts` 中导入并声明真实宽高。Vite 输出带哈希的独立地址，让重复使用的画作共用缓存。

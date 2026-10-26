@@ -47,6 +47,9 @@ jobs:
       - name: Build Astro
         run: pnpm build
 
+      - name: Check internal links and resource budgets
+        run: pnpm check:links && pnpm check:perf
+
       - name: Install browser for regression tests
         run: pnpm exec playwright install --with-deps chromium
 

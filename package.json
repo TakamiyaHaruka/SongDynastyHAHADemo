@@ -9,8 +9,11 @@
     "preview": "astro preview",
     "test": "node --experimental-strip-types --test",
     "test:e2e": "playwright test",
+    "post:new": "node --experimental-strip-types scripts/new-post.mjs",
+    "check:links": "node scripts/check-links.mjs",
+    "check:perf": "node scripts/check-performance.mjs",
     "check": "astro check",
-    "validate": "npm run check && npm test && npm run build && npm run test:e2e",
+    "validate": "npm run check && npm test && npm run build && npm run check:links && npm run check:perf && npm run test:e2e",
     "astro": "astro"
   },
   "dependencies": {

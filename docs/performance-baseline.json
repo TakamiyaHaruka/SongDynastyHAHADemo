@@ -1,0 +1,10 @@
+{
+  "note": "2026-10-26 优化前生产构建；HTML/CSS/JS 使用 gzip 大小，字体使用原始大小。",
+  "runtime": { "largestContentfulPaintMs": 1948, "layoutShift": 0, "navigationP95Ms": 62.6, "note": "本地 Chromium，冷加载 100ms 延迟、200 KiB/s 下载、4 倍 CPU 节流；切换为预热后 8 次导航。" },
+  "resources": {
+    "htmlGzipMaxBytes": 12620,
+    "cssGzipTotalBytes": 19034,
+    "jsGzipTotalBytes": 12167,
+    "fontBytes": 519352
+  }
+}

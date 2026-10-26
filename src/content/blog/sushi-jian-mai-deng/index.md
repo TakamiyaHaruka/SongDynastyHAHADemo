@@ -1,6 +1,7 @@
 ---
 title: 谏买浙灯状
 date: 1072-01-01
+publishedAt: "2026-05-12"
 category: 奏折
 description: 苏轼上疏谏止朝廷购买浙江花灯，力主节俭。
 tags: [苏轼, 谏言, 节俭]

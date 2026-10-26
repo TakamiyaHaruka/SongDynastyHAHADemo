@@ -1,6 +1,7 @@
 ---
 title: 答手诏条陈十事
 date: 1043-09-01
+publishedAt: "2026-05-12"
 category: 奏折
 description: 范仲淹应诏条陈时政十事，力主改革弊政。
 tags: [范仲淹, 庆历新政, 改革]

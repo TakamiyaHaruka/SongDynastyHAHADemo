@@ -1,6 +1,7 @@
 ---
 title: 上仁宗皇帝言事书
 date: 1058-10-01
+publishedAt: "2026-05-12"
 category: 奏折
 description: 王安石万言上书，系统阐述变法图强之策。
 tags: [王安石, 变法, 言事书]

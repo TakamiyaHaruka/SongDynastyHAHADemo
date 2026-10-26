@@ -18,7 +18,7 @@ interface MusicOptions {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const isCard = (value: unknown, link: string): value is AppleMusicCard => {
+const isCard = (value: unknown, link: string, allowUnavailable = false): value is AppleMusicCard => {
   if (!isRecord(value) || value.link !== link) return false;
   const strings = ['title', 'artist', 'year', 'genre', 'accent'];
   const nullableStrings = ['previewUrl', 'artwork', 'artworkSrcSet', 'artworkSizes',
@@ -28,7 +28,7 @@ const isCard = (value: unknown, link: string): value is AppleMusicCard => {
     && ['trackNumber', 'trackCount'].every((key) => value[key] === null || (typeof value[key] === 'number' && Number.isFinite(value[key])))
     && (value.releaseType === 'single' || value.releaseType === 'album')
     // Older caches stored failed lookups as cards. Do not treat those as successes.
-    && !(value.title === 'Music' && /链接格式|抓取失败|资料暂不可用/.test(String(value.artist)));
+    && (allowUnavailable || !(value.title === 'Music' && /链接格式|抓取失败|资料暂不可用/.test(String(value.artist))));
 };
 
 const parseCache = (raw: string): MusicCache => {
@@ -56,7 +56,7 @@ const readCache = async (file: string): Promise<MusicCache> => {
   catch { return { version: 2, entries: {} }; }
 };
 
-const saveCache = async (file: string, cache: MusicCache): Promise<void> => {
+const saveJson = async (file: string, cache: unknown): Promise<void> => {
   const temporary = `${file}.${randomUUID()}.tmp`;
   try {
     await mkdir(dirname(file), { recursive: true });
@@ -95,8 +95,28 @@ export async function loadMusicCards(links: string[], options: MusicOptions = {}
     }
   })));
   if (changed) {
-    try { await saveCache(cacheFile, cache); }
+    try { await saveJson(cacheFile, cache); }
     catch (error) { warn(`[music] Could not write the metadata cache; the site can still build. ${error instanceof Error ? error.message : String(error)}`); }
   }
   return links.map((link) => cards.get(link)!);
+}
+
+export async function prepareMusicCards(links: string[], options: MusicOptions & { root?: string } = {}) {
+  const root = options.root ?? process.cwd();
+  const cards = await loadMusicCards(links, { ...options, cacheFile: options.cacheFile ?? resolve(root, '.cache/music-metadata.json') });
+  // Snapshot failures as well as successes for this render, without changing
+  // the persistent cache's retry policy. Fonts and HTML use identical titles.
+  await saveJson(resolve(root, '.cache/music-build.json'), { links, cards });
+  return cards;
+}
+
+export async function loadPreparedMusicCards(links: string[], options: MusicOptions & { root?: string } = {}): Promise<AppleMusicCard[]> {
+  const root = options.root ?? process.cwd();
+  try {
+    const snapshot: unknown = JSON.parse(await readFile(resolve(root, '.cache/music-build.json'), 'utf8'));
+    if (isRecord(snapshot) && JSON.stringify(snapshot.links) === JSON.stringify(links)
+      && Array.isArray(snapshot.cards) && snapshot.cards.length === links.length
+      && snapshot.cards.every((card, index) => isCard(card, links[index], true))) return snapshot.cards;
+  } catch { /* A direct renderer without the build integration can use the normal cache. */ }
+  return loadMusicCards(links, { ...options, cacheFile: options.cacheFile ?? resolve(root, '.cache/music-metadata.json') });
 }

@@ -1,0 +1,16 @@
+{
+  "resources": {
+    "htmlGzipMaxBytes": 16384,
+    "cssGzipTotalBytes": 25600,
+    "jsGzipTotalBytes": 20480,
+    "fontBytes": 614400
+  },
+  "runtime": {
+    "largestContentfulPaintMs": 4500,
+    "layoutShift": 0.1,
+    "navigationP95Ms": 800,
+    "coldNetworkLatencyMs": 100,
+    "coldDownloadBytesPerSecond": 204800,
+    "cpuSlowdown": 4
+  }
+}

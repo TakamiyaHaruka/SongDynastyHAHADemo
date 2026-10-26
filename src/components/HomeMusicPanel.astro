@@ -1,11 +1,11 @@
 ---
 import { homeMusicAppleLinks } from '../data/home-music';
-import { loadMusicCards } from '../lib/music-cache';
+import { loadPreparedMusicCards } from '../lib/music-cache';
 import HomeMusicSwitcherScript from './HomeMusicSwitcherScript.astro';
 import SectionHeading from './SectionHeading.astro';
 import '../styles/music.css';
 
-const musicCards = await loadMusicCards(homeMusicAppleLinks);
+const musicCards = await loadPreparedMusicCards(homeMusicAppleLinks);
 ---
 
 <section class="home-music-panel section-block" aria-labelledby="music-title">

@@ -1,0 +1,14 @@
+<label class="theme-picker">
+  <span class="sr-only">外观主题</span>
+  <select aria-label="外观主题" data-theme-select>
+    <option value="system">跟随系统</option>
+    <option value="light">浅色</option>
+    <option value="dark">深色</option>
+  </select>
+</label>
+
+<style>
+  .theme-picker { flex: none; }
+  select { min-height: 44px; max-width: 7rem; padding: 0.4rem 0.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-small); background: var(--color-bg); color: var(--color-text); font: inherit; font-size: 0.75rem; cursor: pointer; }
+  @media (max-width: 389px) { select { max-width: 6.25rem; } }
+</style>

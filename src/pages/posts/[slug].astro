@@ -28,14 +28,14 @@ export async function getStaticPaths() {
 }
 
 const { entry, previousPost, nextPost } = Astro.props
-const { title, description, date, category, tags } = entry.data
+const { title, description, date, category, tags, publishedAt, updatedAt } = entry.data
 const { Content, headings } = await render(entry)
 const duplicateTitle = headings[0]?.depth === 2 && headings[0]?.text === title
 const tocHeadings = headings.filter((heading, index) => heading.depth >= 2 && heading.depth <= 3 && !(duplicateTitle && index === 0))
 const ogImageUrl = new URL(withBase(`/og/${entry.id}.png`), Astro.site).toString()
 ---
 
-<BaseLayout title={title} description={description} ogImage={ogImageUrl} currentPath={`/posts/${entry.id}`}>
+<BaseLayout title={title} description={description} ogImage={ogImageUrl} currentPath={`/posts/${entry.id}`} article={{ publishedAt: publishedAt!, updatedAt }}>
   <div class="reading-shell container-main">
     <a class="reading-back text-link" href={withBase('/posts/')}><span aria-hidden="true">←</span>文章总目</a>
     <div class:list={['reading-layout', { 'has-toc': tocHeadings.length > 0 }]}>
@@ -48,6 +48,7 @@ const ogImageUrl = new URL(withBase(`/og/${entry.id}.png`), Astro.site).toString
             {category && <a class="tag" href={withBase(`/posts/category/${encodeURIComponent(category)}/`)}>{category}</a>}
             {date && <time datetime={date}>{formatDate(date)}</time>}
           </div>
+          <p class="post-site-date">本站收录于 <time datetime={publishedAt}>{publishedAt}</time>{updatedAt && updatedAt !== publishedAt && <> · 更新于 <time datetime={updatedAt}>{updatedAt}</time></>}</p>
           {tags && tags.length > 0 && <ul class="post-tags" aria-label="文章标签">{tags.map((tag) => <li>{tag}</li>)}</ul>}
         </header>
         <div class:list={['prose', 'article-prose', { 'has-duplicate-title': duplicateTitle }]}><Content /></div>
@@ -73,6 +74,7 @@ const ogImageUrl = new URL(withBase(`/og/${entry.id}.png`), Astro.site).toString
   .post-title { font-size: var(--text-page); line-height: 1.5; margin: var(--space-3) 0; overflow-wrap: anywhere; text-wrap: balance; }
   .post-description { color: var(--color-text-muted); font-family: var(--font-heading); font-size: 1.05rem; line-height: 1.9; margin-bottom: 1.5rem; }
   .post-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; color: var(--color-text-muted); font-size: 0.75rem; }
+  .post-site-date { margin-top: var(--space-2); color: var(--color-text-muted); font-size: 0.7rem; }
   .post-tags { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; list-style: none; padding: 0; margin: 1rem 0 0; color: var(--color-text-muted); font-size: 0.7rem; }
   .post-tags li::before { content: '#'; color: var(--color-border); margin-right: 0.2rem; }
   .article-prose { max-width: none; font-family: var(--font-heading); font-size: 1.05rem; }

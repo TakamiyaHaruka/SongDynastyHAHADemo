@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import ActionLink from '../components/ActionLink.astro'
+import { withBase } from '../utils/paths'
+
+const feedPath = withBase('/rss.xml')
+const feedUrl = new URL(feedPath, Astro.site).toString()
+---
+
+<BaseLayout title="RSS 订阅" description="订阅宋代手札，在你喜欢的阅读器中慢慢读。" currentPath="/rss">
+  <div class="container-main page-shell">
+    <SectionHeading label="RSS 订阅" title="订阅手札" level="h1" variant="page" description="不必时时来访，让新手札抵达你的阅读器。" />
+    <section class="subscription-card" aria-labelledby="subscription-title">
+      <svg class="subscription-icon" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <circle cx="5" cy="19" r="2" />
+        <path d="M3 10v3a8 8 0 0 1 8 8h3A11 11 0 0 0 3 10ZM3 3v3a15 15 0 0 1 15 15h3A18 18 0 0 0 3 3Z" />
+      </svg>
+      <h2 id="subscription-title">在阅读器里，留一页案头时光。</h2>
+      <p class="subscription-copy">将下方地址添加到你常用的 RSS 阅读器，即可订阅本站的文章更新。</p>
+      <p class="feed-label">订阅地址</p>
+      <code class="feed-address">{feedUrl}</code>
+      <div class="subscription-actions">
+        <ActionLink href={feedPath} data-astro-reload data-astro-prefetch="false">打开订阅源 <span aria-hidden="true">↗</span></ActionLink>
+        <ActionLink href={withBase('/posts/')} variant="outline">翻阅手札</ActionLink>
+      </div>
+      <p class="subscription-note">订阅源为 XML 格式，适合在 RSS 阅读器中打开。</p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .subscription-card { max-width: 48rem; margin-inline: auto; padding: clamp(1.25rem, 4vw, 2.5rem); border: 1px solid var(--color-border); background: var(--color-surface); }
+  .subscription-icon { color: var(--color-accent); margin-bottom: var(--space-5); }
+  h2 { font-size: clamp(1.25rem, 2.5vw, 1.65rem); line-height: 1.6; }
+  .subscription-copy { margin-top: var(--space-3); color: var(--color-text-muted); font-size: 0.9rem; }
+  .feed-label { margin-top: var(--space-8); margin-bottom: var(--space-2); color: var(--color-text-muted); font-size: var(--text-caption); }
+  .feed-address { display: block; padding: var(--space-4); border: 1px solid var(--color-border); background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); font-size: 0.8rem; overflow-wrap: anywhere; user-select: all; }
+  .subscription-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+  .subscription-note { margin-top: var(--space-4); color: var(--color-text-muted); font-size: var(--text-caption); }
+</style>

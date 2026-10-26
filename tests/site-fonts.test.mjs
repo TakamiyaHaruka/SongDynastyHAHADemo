@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createRequire } from 'node:module'
 import test from 'node:test'
-import { parseUnicodeRanges, prepareFontAssets, readFontFaces, toUnicodeRange } from '../integrations/site-fonts.mjs'
+import { parseUnicodeRanges, prepareFontAssets, prepareSiteAssets, readFontFaces, toUnicodeRange } from '../integrations/site-fonts.mjs'
 
 const require=createRequire(import.meta.url)
 const includes=(ranges,character)=>ranges.some(([start,end])=>character.codePointAt(0)>=start&&character.codePointAt(0)<=end)
@@ -16,6 +16,24 @@ test('Unicode ranges preserve supplementary characters and wildcard coverage',()
   assert.equal(includes(ranges,'Z'),false)
   assert.deepEqual(parseUnicodeRanges('U+4??, U+20000-20002'),[[0x400,0x4ff],[0x20000,0x20002]])
   assert.throws(()=>parseUnicodeRanges('not-a-range'))
+})
+
+test('a cold build includes fresh music names before the cache exists', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'haruka-cold-fonts-'))
+  try {
+    await mkdir(join(root, 'src'), { recursive: true })
+    await writeFile(join(root, 'src', 'copy.md'), 'ABC')
+    const sources = [require.resolve('@fontsource-variable/noto-serif-sc/index.css')]
+    const before = await prepareFontAssets(root, { sources })
+    assert.equal(before.characters.includes('龘'), false)
+    const after = await prepareSiteAssets(root, {
+      sources,
+      prepareMetadata: async () => [{ title: '龘的新曲' }],
+    })
+    assert.ok(after.characters.includes('龘'))
+    assert.ok(after.faces.some(face => includes(parseUnicodeRanges(face.range), '龘')))
+    await assert.rejects(readFile(join(root, '.cache/music-metadata.json')), { code: 'ENOENT' })
+  } finally { await rm(root, { recursive: true, force: true }) }
 })
 
 test('font declarations retain family, weight, and source paths',()=>{

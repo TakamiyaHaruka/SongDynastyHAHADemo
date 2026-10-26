@@ -208,9 +208,69 @@ test('a stalled music request can be cancelled and does not block selection', as
 })
 
 test('public page layouts stay within the viewport and preserve heading structure', async ({ page }) => {
-  for (const route of ['./', 'posts/', 'posts/category/御笔/', 'posts/baozheng-qingguan/', 'friends/', 'about/']) {
+  for (const route of ['./', 'posts/', 'posts/category/御笔/', 'posts/baozheng-qingguan/', 'friends/', 'about/', 'rss/']) {
     await page.goto(route)
     await expect(page.locator('h1')).toHaveCount(1)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
+})
+
+test('theme preference persists across reloads, navigation and system changes', async ({ page }) => {
+  await page.goto('./')
+  const picker = page.getByRole('combobox', { name: '外观主题' })
+  await picker.selectOption('dark')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await page.emulateMedia({ colorScheme: 'light' })
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await navigate(page, '文章')
+  await expect(picker).toHaveValue('dark')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await page.reload()
+  await expect(picker).toHaveValue('dark')
+  await picker.selectOption('light')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await picker.selectOption('system')
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await page.emulateMedia({ colorScheme: 'light' })
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+})
+
+test('theme works with unavailable storage and is applied before the body', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'localStorage', { get() { throw new Error('Storage unavailable') } })
+    Object.assign(window, { earlyThemes: [] })
+    new MutationObserver(() => {
+      if (document.body) (window as any).earlyThemes.push(document.documentElement.dataset.theme)
+    }).observe(document, { childList: true, subtree: true })
+  })
+  await page.goto('./')
+  await expect(page.getByRole('combobox', { name: '外观主题' })).toHaveValue('system')
+  await page.getByRole('combobox', { name: '外观主题' }).selectOption('dark')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await navigate(page, '文章')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  const themes = await page.evaluate(() => (window as any).earlyThemes)
+  expect(themes.length).toBeGreaterThan(0)
+  expect(themes.every((theme: string | undefined) => theme === 'light' || theme === 'dark')).toBe(true)
+})
+
+test('RSS entry opens the subscription page and article metadata uses site dates', async ({ page, request }) => {
+  await page.goto('./')
+  const rss = page.locator('.nav-links').getByRole('link', { name: 'RSS 订阅', exact: true })
+  if (await rss.isVisible()) await rss.click()
+  else {
+    await page.getByRole('button', { name: '打开菜单', exact: true }).click()
+    await page.locator('#drawer-panel').getByRole('link', { name: 'RSS', exact: true }).click()
+  }
+  await expect(page.getByRole('heading', { name: '订阅手札', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: '打开订阅源' })).toHaveAttribute('href', /rss\.xml$/)
+  const feed = await (await request.get('rss.xml')).text()
+  expect(feed).toContain('12 May 2026')
+  await page.getByRole('link', { name: '翻阅手札', exact: true }).click()
+  await page.locator('.post-card').first().click()
+  await expect(page.locator('.post-site-date')).toContainText('2026-05-12')
+  await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content', 'article')
+  const article = await page.locator('script[type="application/ld+json"]').evaluateAll(scripts => scripts.map(script => JSON.parse(script.textContent!)).find(value => value['@type'] === 'BlogPosting'))
+  expect(article.datePublished).toBe('2026-05-12')
 })

@@ -74,7 +74,7 @@ export async function prepareFontAssets(root, options = {}) {
   // Include runtime copy and source text so newly added articles and labels are
   // covered automatically. Printable ASCII also covers dates and numeric counts.
   const ascii = Array.from({ length: 95 }, (_, index) => String.fromCodePoint(index + 32)).join('')
-  const characters = [...new Set(Array.from(ascii + '…·—–‘’“”《》「」【】（）！？：；，。、←→↑↓↗＋−×©' + metadata + await sourceText(join(root, 'src')) + await sourceText(join(root, 'public', 'js'))))]
+  const characters = [...new Set(Array.from(ascii + '…·—–‘’“”《》「」【】（）！？：；，。、←→↑↓↗＋−×©' + metadata + (options.extraText ?? '') + await sourceText(join(root, 'src')) + await sourceText(join(root, 'public', 'js'))))]
     .filter(character => character.codePointAt(0) >= 32)
     .sort((a, b) => a.codePointAt(0) - b.codePointAt(0))
   const faces = []
@@ -112,8 +112,16 @@ export async function prepareFontAssets(root, options = {}) {
   return { ...manifest, changed }
 }
 
-/** @returns {import('astro').AstroIntegration} */
-export default function siteFonts() {
+export async function prepareSiteAssets(root, options = {}) {
+  const metadata = await options.prepareMetadata?.(root)
+  return prepareFontAssets(root, { ...options, extraText: metadata ? JSON.stringify(metadata) : '' })
+}
+
+/**
+ * @param {{ prepareMetadata?: (root: string) => Promise<unknown> }} options
+ * @returns {import('astro').AstroIntegration}
+ */
+export default function siteFonts(options = {}) {
   let root
   let timer
   let pending = Promise.resolve()
@@ -123,7 +131,7 @@ export default function siteFonts() {
       'astro:config:setup': async ({ config, command, logger }) => {
         root = fileURLToPath(config.root)
         if (command === 'preview') return
-        const result = await prepareFontAssets(root)
+        const result = await prepareSiteAssets(root, options)
         logger.info(`${result.faces.length} font subsets: ${(result.bytes / 1024).toFixed(0)} KiB (source ${(result.originalBytes / 1024).toFixed(0)} KiB)`)
       },
       'astro:server:setup': ({ server, logger }) => {
@@ -135,7 +143,7 @@ export default function siteFonts() {
           clearTimeout(timer)
           timer = setTimeout(() => {
             pending = pending.then(async () => {
-              const result = await prepareFontAssets(root)
+              const result = await prepareSiteAssets(root, options)
               if (result.changed) server.ws.send({ type: 'full-reload' })
             }).catch(error => logger.error(`Font subsets could not be refreshed: ${error.message}`))
           }, 200)

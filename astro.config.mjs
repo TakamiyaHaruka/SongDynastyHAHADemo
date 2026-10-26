@@ -3,6 +3,8 @@ import tailwindcss from '@tailwindcss/vite'
 import expressiveCode from 'astro-expressive-code'
 import sitemap from '@astrojs/sitemap'
 import siteFonts from './integrations/site-fonts.mjs'
+import { prepareMusicCards } from './src/lib/music-cache.ts'
+import { homeMusicAppleLinks } from './src/data/home-music.ts'
 
 export default defineConfig({
   site: 'https://TakamiyaHaruka.github.io',
@@ -23,7 +25,7 @@ export default defineConfig({
     },
   },
   integrations: [
-    siteFonts(),
+    siteFonts({ prepareMetadata: root => prepareMusicCards(homeMusicAppleLinks, { root }) }),
     expressiveCode({
       themes: ['one-dark-pro'],
     }),

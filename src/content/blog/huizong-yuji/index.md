@@ -1,6 +1,7 @@
 ---
 title: 御制艮岳记
 date: 1117-03-01
+publishedAt: "2026-05-12"
 category: 御笔
 description: 宋徽宗亲撰艮岳记，记述营造皇家园林之意趣。
 tags: [宋徽宗, 艮岳, 园林]

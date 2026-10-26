@@ -14,9 +14,9 @@ export async function GET(context: APIContext) {
     title: '宋徽宗',
     description: '赵佶的宋代手札 · 书画、茶事与园林',
     site: new URL(withBase('/'), context.site),
-    items: posts.map((post) => ({
+    items: [...posts].sort((a, b) => b.data.publishedAt.localeCompare(a.data.publishedAt) || a.id.localeCompare(b.id)).map((post) => ({
       title: post.data.title,
-      pubDate: new Date(post.data.date + 'T00:00:00Z'),
+      pubDate: new Date(post.data.publishedAt + 'T00:00:00Z'),
       description: post.data.description,
       link: new URL(withBase(`/posts/${post.id}/`), context.site).toString(),
       content: sanitizeHtml(parser.render(post.body ?? ''), {

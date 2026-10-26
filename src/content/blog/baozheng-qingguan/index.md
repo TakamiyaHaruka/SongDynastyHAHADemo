@@ -1,6 +1,7 @@
 ---
 title: 乞不用赃吏
 date: 1043-06-01
+publishedAt: "2026-05-12"
 category: 奏折
 description: 包拯上疏请严惩贪官污吏，肃清吏治。
 tags: [包拯, 反腐, 吏治]

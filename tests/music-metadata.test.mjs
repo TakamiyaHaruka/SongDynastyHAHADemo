@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import test from 'node:test'
 import { fallbackMusicCard, resolveAppleMusicCard } from '../src/lib/apple-music.ts'
-import { loadMusicCards, MUSIC_CACHE_TTL_MS } from '../src/lib/music-cache.ts'
+import { loadMusicCards, loadPreparedMusicCards, prepareMusicCards, MUSIC_CACHE_TTL_MS } from '../src/lib/music-cache.ts'
 
 const link = 'https://music.apple.com/cn/song/example/123'
 const anotherLink = 'https://music.apple.com/cn/song/another/456'
@@ -12,6 +12,18 @@ const now = 1_790_000_000_000
 const successfulCard = (url = link, title = 'Song') => ({ ...fallbackMusicCard(url), title, artist: 'Artist' })
 const entry = (card = successfulCard(), updatedAt = now) => ({ card, updatedAt })
 const failedLookup = async () => { throw new Error('offline') }
+
+test('build fonts and the page share one snapshot even when persistent caching fails', async t => {
+  const options = await fixture(t, {})
+  const root = dirname(options.cacheFile)
+  const fresh = successfulCard(link, '龘的新曲')
+  const cards = await prepareMusicCards([link], { ...options, root, cacheFile: join(options.cacheFile, 'blocked.json'), resolveCard: async () => fresh })
+  assert.deepEqual(cards, [fresh])
+  let calls = 0
+  const rendered = await loadPreparedMusicCards([link], { root, resolveCard: async () => { calls++; throw new Error('must not refetch') } })
+  assert.deepEqual(rendered, cards)
+  assert.equal(calls, 0)
+})
 
 async function fixture(t, cache) {
   const directory = await mkdtemp(join(tmpdir(), 'haruka-music-'))
