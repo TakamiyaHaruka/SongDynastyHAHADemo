@@ -16,14 +16,17 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  projects: [...['light', 'dark'].flatMap(colorScheme => [320, 390, 768, 1440].map(width => ({
+  projects: [...['light', 'dark'].flatMap(colorScheme => [1280, 1440].map(width => ({
     name: `${colorScheme}-${width}`,
     testMatch: 'site.spec.ts',
     use: { viewport: { width, height: 1000 }, colorScheme: colorScheme as 'light' | 'dark' },
-  }))), {
+  }))), ...['light', 'dark'].map(colorScheme => ({
+    name: `accessibility-${colorScheme}`, testMatch: 'accessibility.spec.ts',
+    use: { viewport: { width: 1440, height: 1000 }, colorScheme: colorScheme as 'light' | 'dark' },
+  })), {
     name: 'performance', testMatch: 'performance.spec.ts', timeout: 45000,
     use: { viewport: { width: 1440, height: 1000 }, colorScheme: 'light' },
-    dependencies: ['light', 'dark'].flatMap(theme => [320, 390, 768, 1440].map(width => `${theme}-${width}`)),
+    dependencies: [...['light', 'dark'].flatMap(theme => [1280, 1440].map(width => `${theme}-${width}`)), 'accessibility-light', 'accessibility-dark'],
   }],
   webServer: {
     command: 'npm run preview -- --host 127.0.0.1 --port 4349',

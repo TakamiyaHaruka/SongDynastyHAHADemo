@@ -25,7 +25,7 @@ CSS/JS 预算统计构建目录内全部同类资源，而非假定所有页面�
 
 优化前本机测得 LCP 1948ms、CLS 0、切换 P95 62.6ms。时间指标会受机器负载影响，阈值留有 CI 环境余量。浏览器结果保存在 Playwright 报告的 JSON 附件中。
 
-`pnpm test:e2e` 先运行功能回归，再运行性能项目。单独复测性能可执行：
+`pnpm test:e2e` 先运行桌面 1280 / 1440px 明暗主题功能回归及 1440px 明暗主题无障碍检查，再运行性能项目。单独复测性能可执行：
 
 ```sh
 pnpm test:e2e --project=performance --no-deps

@@ -11,7 +11,7 @@ const remaining = [...homeGallerySeasons, ...homeGalleryItems].filter((item) => 
   <div class="featured-gallery">
     {featured.map((item, index) => (
       <figure class="gallery-work">
-        <button class="gallery-frame" type="button" data-gallery-open aria-label={`查看完整画作：${item.alt}`} aria-haspopup="dialog" aria-controls="gallery-viewer"><img src={item.src} alt={item.alt} loading={index === 0 ? 'eager' : 'lazy'} fetchpriority={index === 0 ? 'high' : 'auto'} decoding="async" width={item.width} height={item.height} /><span class="gallery-view-hint" aria-hidden="true">展卷 ↗</span></button>
+        <button class="gallery-frame" type="button" data-gallery-open aria-label={`查看完整画作：${item.alt}`} aria-haspopup="dialog" aria-controls="gallery-viewer"><img src={item.src} alt={item.alt} loading={index === 0 ? 'eager' : 'lazy'} fetchpriority={index === 0 ? 'high' : 'auto'} decoding="async" width={item.width} height={item.height} data-full-src={item.fullSrc} data-full-width={item.fullWidth} data-full-height={item.fullHeight} /><span class="gallery-view-hint" aria-hidden="true">展卷 ↗</span></button>
         <figcaption><span>{item.alt}</span><span class="work-number" aria-hidden="true">0{index + 1}</span></figcaption>
       </figure>
     ))}
@@ -21,7 +21,7 @@ const remaining = [...homeGallerySeasons, ...homeGalleryItems].filter((item) => 
     <div class="extended-gallery">
       {remaining.map((item) => (
         <figure class="gallery-work">
-          <button class="gallery-frame" type="button" data-gallery-open aria-label={`查看完整画作：${item.alt}`} aria-haspopup="dialog" aria-controls="gallery-viewer"><img src={item.src} alt={item.alt} loading="lazy" decoding="async" width={item.width} height={item.height} /><span class="gallery-view-hint" aria-hidden="true">展卷 ↗</span></button>
+          <button class="gallery-frame" type="button" data-gallery-open aria-label={`查看完整画作：${item.alt}`} aria-haspopup="dialog" aria-controls="gallery-viewer"><img src={item.src} alt={item.alt} loading="lazy" decoding="async" width={item.width} height={item.height} data-full-src={item.fullSrc} data-full-width={item.fullWidth} data-full-height={item.fullHeight} /><span class="gallery-view-hint" aria-hidden="true">展卷 ↗</span></button>
           <figcaption>{item.alt}</figcaption>
         </figure>
       ))}

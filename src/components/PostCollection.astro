@@ -3,21 +3,27 @@ import type { CollectionEntry } from 'astro:content'
 import type { CategoryItem } from '../utils/categories'
 import PostCard from './PostCard.astro'
 import PostSidebar from './PostSidebar.astro'
+import PostPagination from './PostPagination.astro'
+import type { ListPage } from '../utils/post-lists'
 
 interface Props {
   posts: CollectionEntry<'blog'>[]
   categories: CategoryItem[]
   activeCategory?: string
+  tags?: { name: string; count: number }[]
+  activeTag?: string
+  pagination?: ListPage
 }
-const { posts, categories, activeCategory } = Astro.props
+const { posts, categories, activeCategory, tags, activeTag, pagination } = Astro.props
 ---
 
 <div class="posts-layout">
   <div class="posts-list">
     {posts.map(post => <PostCard post={post} />)}
     {posts.length === 0 && <p class="empty-copy">此处尚无手札，稍后再来展卷。</p>}
+    {pagination && <PostPagination pagination={pagination} />}
   </div>
-  <aside class="posts-aside"><PostSidebar categories={categories} activeCategory={activeCategory} /></aside>
+  <aside class="posts-aside"><PostSidebar categories={categories} activeCategory={activeCategory} tags={tags} activeTag={activeTag} /></aside>
 </div>
 
 <style>

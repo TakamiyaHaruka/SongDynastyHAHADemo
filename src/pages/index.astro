@@ -13,7 +13,8 @@ const posts = await getPublishedPosts()
 ---
 
 <BaseLayout title="首页" currentPath="/">
-  <link slot="head" rel="preload" as="image" href={homeHeroArtwork.src} fetchpriority="high" />
+  <link slot="head" rel="preload" as="image" href={homeHeroArtwork.mobileSrc} media="(max-width: 767px)" fetchpriority="high" />
+  <link slot="head" rel="preload" as="image" href={homeHeroArtwork.src} imagesrcset={homeHeroArtwork.srcSet} imagesizes={homeHeroArtwork.sizes} media="(min-width: 768px)" fetchpriority="high" />
   <div class="home-exhibition container-main">
     <HomeHeroFeature />
     <HomeGalleryPanel />

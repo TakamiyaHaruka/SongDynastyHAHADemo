@@ -29,16 +29,17 @@ const siteUrl = new URL(base, Astro.site).toString()
 const fullTitle = `${title} - 宋徽宗`
 const routePath = getRoutePath(currentPath)
 const canonicalUrl = new URL(withBase(routePath === '/' ? '/' : routePath === '/404' ? '/404.html' : `${routePath}/`), siteUrl).toString()
-const pageImages: Record<string, string> = { '/': 'index', '/posts': 'posts', '/about': 'about', '/friends': 'friends', '/404': '404' }
+const pageImages: Record<string, string> = { '/': 'index', '/posts': 'posts', '/about': 'about', '/friends': 'friends', '/404': '404', '/search': 'search' }
 const defaultOgPath = routePath.startsWith('/posts/category/')
-  ? `og/category/${routePath.slice('/posts/category/'.length)}.png`
-  : `og/page/${pageImages[routePath] ?? 'index'}.png`
+  ? `og/category/${routePath.slice('/posts/category/'.length).split('/')[0]}.png`
+  : `og/page/${pageImages[routePath] ?? (routePath.startsWith('/posts/') ? 'posts' : 'index')}.png`
 const ogImageUrl = ogImage ?? new URL(`${base}${defaultOgPath}`, siteUrl).toString()
 const githubLink = socialLinks.find((link) => link.name === 'GitHub')
 
 const navItems = [
   { label: '首页', href: base },
   { label: '文章', href: `${base}posts/` },
+  { label: '检索', href: `${base}search/` },
   { label: '友人', href: `${base}friends/` },
   { label: '关于', href: `${base}about/` },
 ]
@@ -60,7 +61,7 @@ function isActive(href: string): boolean {
     <ClientRouter fallback="swap" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    {routePath === '/404' && <meta name="robots" content="noindex" />}
+    {['/404', '/search'].includes(routePath) && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonicalUrl} />
 
     <!-- Open Graph -->
@@ -210,7 +211,7 @@ function isActive(href: string): boolean {
     <div class="nav-spacer"></div>
 
     <!-- Main Content -->
-    <main id="main-content">
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
 

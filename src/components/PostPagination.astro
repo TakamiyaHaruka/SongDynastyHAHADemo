@@ -1,0 +1,18 @@
+---
+import type { ListPage } from '../utils/post-lists'
+import { pagePath } from '../utils/post-lists'
+import { withBase } from '../utils/paths'
+interface Props { pagination: ListPage }
+const { pagination: { currentPage, totalPages, basePath } } = Astro.props
+---
+{totalPages > 1 && <nav class="post-pagination" aria-label="文章分页">
+  {currentPage > 1 ? <a class="btn-outline" rel="prev" href={withBase(pagePath(basePath, currentPage - 1))}>← 上一页</a> : <span />}
+  <span>第 {currentPage} / {totalPages} 页</span>
+  {currentPage < totalPages ? <a class="btn-outline" rel="next" href={withBase(pagePath(basePath, currentPage + 1))}>下一页 →</a> : <span />}
+</nav>}
+<style>
+  .post-pagination { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--space-6); border-top: 1px solid var(--color-border); padding-top: var(--space-6); margin-top: var(--space-4); }
+  .post-pagination > :last-child { justify-self: end; }
+  .post-pagination a { width: fit-content; }
+  .post-pagination span { color: var(--color-text-muted); font-size: 0.8rem; }
+</style>

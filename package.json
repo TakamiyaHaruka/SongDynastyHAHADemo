@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "test": "node --experimental-strip-types --test",
     "test:e2e": "playwright test",
+    "test:a11y": "playwright test --project=accessibility-light --project=accessibility-dark",
     "post:new": "node --experimental-strip-types scripts/new-post.mjs",
     "check:links": "node scripts/check-links.mjs",
     "check:perf": "node scripts/check-performance.mjs",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.11",
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "1.62.1",
     "@types/markdown-it": "^14.2.0",
     "@types/node": "^22",

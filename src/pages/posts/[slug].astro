@@ -49,7 +49,7 @@ const ogImageUrl = new URL(withBase(`/og/${entry.id}.png`), Astro.site).toString
             {date && <time datetime={date}>{formatDate(date)}</time>}
           </div>
           <p class="post-site-date">本站收录于 <time datetime={publishedAt}>{publishedAt}</time>{updatedAt && updatedAt !== publishedAt && <> · 更新于 <time datetime={updatedAt}>{updatedAt}</time></>}</p>
-          {tags && tags.length > 0 && <ul class="post-tags" aria-label="文章标签">{tags.map((tag) => <li>{tag}</li>)}</ul>}
+          {tags && tags.length > 0 && <ul class="post-tags" aria-label="文章标签">{tags.map((tag) => <li><a href={withBase(`/posts/tag/${encodeURIComponent(tag)}/`)}>{tag}</a></li>)}</ul>}
         </header>
         <div class:list={['prose', 'article-prose', { 'has-duplicate-title': duplicateTitle }]}><Content /></div>
         {(previousPost || nextPost) && (
@@ -77,6 +77,8 @@ const ogImageUrl = new URL(withBase(`/og/${entry.id}.png`), Astro.site).toString
   .post-site-date { margin-top: var(--space-2); color: var(--color-text-muted); font-size: 0.7rem; }
   .post-tags { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; list-style: none; padding: 0; margin: 1rem 0 0; color: var(--color-text-muted); font-size: 0.7rem; }
   .post-tags li::before { content: '#'; color: var(--color-border); margin-right: 0.2rem; }
+  .post-tags a { color: var(--color-text-muted); text-decoration: underline; text-underline-offset: 0.2em; }
+  .post-tags a:hover { color: var(--color-accent); }
   .article-prose { max-width: none; font-family: var(--font-heading); font-size: 1.05rem; }
   .has-duplicate-title :global(> h2:first-child) { display: none; }
   .article-prose :global(h3) { margin-top: 2rem; }

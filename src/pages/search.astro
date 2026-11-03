@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import { getPublishedPosts } from '../lib/posts'
+import { getCategoryItems } from '../utils/categories'
+import { getTagItems } from '../utils/post-lists'
+import { withBase } from '../utils/paths'
+const posts = await getPublishedPosts()
+---
+<BaseLayout title="检索手札" currentPath="/search" description="按关键词、分类或标签检索宋代手札。">
+  <div class="container-main page-shell search-page" data-post-search data-index-url={withBase('/search-index.json')}>
+    <SectionHeading label="寻章摘句" title="检索手札" level="h1" variant="page" description="从标题、正文与标签中，寻一页心中所想。" />
+    <form role="search" aria-label="手札检索" action={withBase('/search/')} method="get" class="search-form">
+      <div class="search-keyword"><label for="search-query">关键词</label><input id="search-query" name="q" type="search" maxlength="200" placeholder="如：艮岳、茶事、山水" aria-describedby="search-help" /></div>
+      <div><label for="search-category">分类</label><select id="search-category" name="category"><option value="">全部分类</option>{getCategoryItems(posts).map(category => <option value={category.name}>{category.name}</option>)}</select></div>
+      <div><label for="search-tag">标签</label><select id="search-tag" name="tag"><option value="">全部标签</option>{getTagItems(posts).map(tag => <option value={tag.name}>{tag.name}</option>)}</select></div>
+      <button class="btn-primary" type="submit">检索</button>
+      <button class="btn-outline" type="reset">清空</button>
+      <p id="search-help">支持多个关键词，以空格分隔；分类与标签可同时筛选。</p>
+    </form>
+    <p class="search-status" role="status" aria-live="polite" aria-atomic="true" data-search-status>正在载入手札…</p>
+    <p class="search-error" role="alert" data-search-error hidden>手札暂时无法载入，请重试。<button class="btn-outline" type="button" data-search-retry>重新载入</button></p>
+    <noscript><p>启用 JavaScript 后可检索正文，也可直接<a href={withBase('/posts/')}>浏览文章总目与标签</a>。</p></noscript>
+    <section aria-label="检索结果" aria-busy="true" data-search-results></section>
+    <nav class="search-pagination" aria-label="检索结果分页" data-search-pagination hidden>
+      <button class="btn-outline" type="button" data-search-previous>← 上一页</button><span data-search-page></span><button class="btn-outline" type="button" data-search-next>下一页 →</button>
+    </nav>
+    <p class="search-back"><a class="text-link" href={withBase('/posts/')}>返回文章总目 <span aria-hidden="true">↗</span></a></p>
+  </div>
+</BaseLayout>
+<script>import '../scripts/search'</script>
+<style>
+  .search-page { max-width: 68rem; }
+  .search-form { display: grid; grid-template-columns: minmax(20rem, 1fr) 9rem 10rem auto auto; gap: var(--space-4); align-items: end; padding: var(--space-6); background: var(--color-bg-alt); border: 1px solid var(--color-border); }
+  label { display: block; margin-bottom: var(--space-2); font-size: 0.8rem; }
+  input, select { display: block; width: 100%; min-height: 44px; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-text-muted); border-radius: var(--radius-small); background: var(--color-surface); color: var(--color-text); font: inherit; font-size: 0.85rem; }
+  input::placeholder { color: var(--color-text-muted); opacity: 1; }
+  #search-help { grid-column: 1 / -1; color: var(--color-text); font-size: 0.75rem; }
+  .search-status { padding-block: var(--space-6); color: var(--color-text-muted); font-size: 0.85rem; }
+  .search-error { margin-bottom: var(--space-6); }
+  .search-error button { margin-left: var(--space-4); }
+  .search-pagination { display: flex; justify-content: space-between; align-items: center; gap: var(--space-6); margin-top: var(--space-6); }
+  .search-pagination[hidden] { display: none; }
+  .search-pagination button:disabled { opacity: 0.55; cursor: default; }
+  .search-back { margin-top: var(--space-8); }
+  [data-search-results] :global(.search-result) { display: block; padding-block: var(--space-6); border-top: 1px solid var(--color-border); color: var(--color-text); }
+  [data-search-results] :global(h2) { font-size: 1.5rem; line-height: 1.5; margin-block: var(--space-3); overflow-wrap: anywhere; }
+  [data-search-results] :global(a:hover h2) { color: var(--color-accent); }
+  [data-search-results] :global(p) { color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.9; overflow-wrap: anywhere; }
+  [data-search-results] :global(.search-meta) { display: flex; align-items: center; gap: var(--space-4); color: var(--color-text-muted); font-size: 0.75rem; }
+</style>

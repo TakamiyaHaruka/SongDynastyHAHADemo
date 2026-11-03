@@ -79,9 +79,10 @@ const colors = [
       <SectionHeading title="御用色谱" description="轻触色块，抄一抹宋色。" />
       <div class="color-grid">
         {colors.map((c) => (
-          <button type="button" class="color-swatch" data-hex={c.hex} aria-label={`复制${c.name}色值 ${c.hex}`}>
+          <button type="button" class="color-swatch" data-hex={c.hex}>
             <span class="color-preview" style={`background: ${c.hex};`}></span>
             <span class="color-info"><span class="color-name">{c.name}</span><span class="color-hex" aria-live="polite">{c.hex}</span></span>
+            <span class="sr-only">，复制色值</span>
           </button>
         ))}
       </div>

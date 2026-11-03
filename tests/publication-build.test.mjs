@@ -27,8 +27,8 @@ test('production output excludes drafts from routes, categories, feed, share ima
   // This isolated build exercises publication only, without external music lookups.
   await writeFile(join(fixture, 'src/data/home-music.ts'), 'export const homeMusicAppleLinks: string[] = []\n')
   for (const [slug, frontmatter] of [
-    ['qa-undated-draft', 'title: 草稿不可公开\ndraft: true\ncategory: 草稿专属'],
-    ['qa-dated-draft', 'title: 已填日期的草稿也不可公开\ndate: "2026-10-22"\ndraft: true\ncategory: 草稿专属'],
+    ['qa-undated-draft', 'title: 草稿不可公开\ndraft: true\ncategory: 草稿专属\ntags: [草稿标签]'],
+    ['qa-dated-draft', 'title: 已填日期的草稿也不可公开\ndate: "2026-10-22"\ndraft: true\ncategory: 草稿专属\ntags: [草稿标签]'],
     ['qa-legacy', 'title: 旧版日期兼容验证\npubDate: "2026-10-20"\npublishedAt: "2026-10-23"\nupdatedAt: "2026-10-25"\ncategory: 御笔'],
   ]) {
     const directory = join(fixture, 'src/content/blog', slug)
@@ -36,6 +36,11 @@ test('production output excludes drafts from routes, categories, feed, share ima
     await writeFile(join(directory, 'index.md'), `---\n${frontmatter}\n---\n\n## 正文\n\n发布验证。\n`)
   }
   await createDraft('qa-command-draft', { contentRoot: join(fixture, 'src/content/blog'), title: '命令生成的草稿', now: new Date('2026-10-26T00:00:00Z') })
+  for (let index = 0; index < 11; index++) {
+    const directory = join(fixture, 'src/content/blog', `qa-page-${String(index).padStart(2, '0')}`)
+    await mkdir(directory, { recursive: true })
+    await writeFile(join(directory, 'index.md'), `---\ntitle: 分页手札${index}\ndate: "1000-01-01"\npublishedAt: "2026-10-23"\ncategory: 分页测试\ntags: [分页测试]\n---\n\n## 正文\n\n可检索的分页正文。\n`)
+  }
   try {
     await promisify(execFile)(process.execPath, [astroBin, 'build'], {
       cwd: fixture, timeout: 50000, maxBuffer: 2 * 1024 * 1024,
@@ -49,6 +54,21 @@ test('production output excludes drafts from routes, categories, feed, share ima
   }
   assert.equal(existsSync(join(dist, 'posts/category/草稿专属/index.html')), false)
   assert.equal(existsSync(join(dist, 'og/category/草稿专属.png')), false)
+  assert.equal(existsSync(join(dist, 'posts/tag/草稿标签/index.html')), false)
+  const searchIndex = JSON.parse(await readFile(join(dist, 'search-index.json'), 'utf8'))
+  assert.equal(searchIndex.length, 17)
+  assert.doesNotMatch(JSON.stringify(searchIndex), /qa-undated-draft|qa-dated-draft|qa-command-draft|草稿标签/)
+  assert.ok(searchIndex.find(post => post.id === 'qa-page-10').body.includes('可检索的分页正文'))
+  for (const prefix of ['posts', 'posts/category/分页测试', 'posts/tag/分页测试']) {
+    const first = await readFile(join(dist, prefix, 'index.html'), 'utf8')
+    const second = await readFile(join(dist, prefix, 'page/2/index.html'), 'utf8')
+    assert.equal((first.match(/class="post-card"/g) ?? []).length, 10)
+    assert.equal((second.match(/class="post-card"/g) ?? []).length, prefix === 'posts' ? 7 : 1)
+    assert.match(second, /rel="prev"/)
+    assert.doesNotMatch(second, /rel="next"/)
+    assert.equal(existsSync(join(dist, prefix, 'page/1/index.html')), false)
+    assert.equal(existsSync(join(dist, prefix, 'page/3/index.html')), false)
+  }
   for (const file of ['index.html', 'posts/index.html', 'posts/category/御笔/index.html', 'rss.xml', 'sitemap-0.xml', 'posts/qa-legacy/index.html']) {
     const output = await readFile(join(dist, file), 'utf8')
     assert.doesNotMatch(output, /qa-undated-draft|qa-dated-draft|草稿不可公开|草稿专属/)

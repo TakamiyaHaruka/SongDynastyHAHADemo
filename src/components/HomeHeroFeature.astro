@@ -6,7 +6,10 @@ import ActionLink from './ActionLink.astro'
 ---
 
 <section class="hero-feature" aria-labelledby="hero-title">
-  <img class="hero-artwork" src={homeHeroArtwork.src} alt={homeHeroArtwork.alt} style={`object-position: ${homeHeroArtwork.position};`} width="1200" height="400" fetchpriority="high" decoding="async" />
+  <picture class="hero-artwork">
+    <source media="(max-width: 767px)" srcset={homeHeroArtwork.mobileSrc} width="768" height="768" />
+    <img src={homeHeroArtwork.src} srcset={homeHeroArtwork.srcSet} sizes={homeHeroArtwork.sizes} alt={homeHeroArtwork.alt} style={`object-position: ${homeHeroArtwork.position};`} width={homeHeroArtwork.width} height={homeHeroArtwork.height} fetchpriority="high" decoding="async" />
+  </picture>
   <div class="hero-overlay" aria-hidden="true"></div>
   <div class="hero-content">
     <p class="hero-eyebrow"><span data-home-greeting>展卷有时</span><span class="hero-dot">·</span>赵佶的宋代手札</p>
@@ -33,7 +36,8 @@ import ActionLink from './ActionLink.astro'
 
 <style>
   .hero-feature { position: relative; isolation: isolate; overflow: hidden; min-height: 360px; display: flex; align-items: center; background: var(--color-art-surface); }
-  .hero-artwork { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .hero-artwork { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; }
+  .hero-artwork img { width: 100%; height: 100%; object-fit: cover; }
   .hero-overlay { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, var(--color-bg-alt) 0%, color-mix(in srgb, var(--color-bg-alt) 94%, transparent) 30%, color-mix(in srgb, var(--color-bg-alt) 65%, transparent) 48%, transparent 75%); }
   .hero-content { padding: 2.5rem 3rem; max-width: 64%; }
   .hero-eyebrow { display: flex; flex-wrap: wrap; gap: 0.65rem; color: var(--color-text-muted); font-size: 0.75rem; letter-spacing: 0.12em; }

@@ -4,6 +4,7 @@ import PostCollection from '../../../components/PostCollection.astro'
 import SectionHeading from '../../../components/SectionHeading.astro'
 import { getPublishedPosts } from '../../../lib/posts'
 import { getCategoryItems } from '../../../utils/categories'
+import { getTagItems, listPage } from '../../../utils/post-lists'
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts()
@@ -13,20 +14,21 @@ export async function getStaticPaths() {
     params: { category: cat.name },
     props: {
       category: cat.name,
-      posts: posts.filter((p) => (p.data.category ?? 'Uncategorized') === cat.name),
+      ...listPage(posts.filter((p) => (p.data.category ?? 'Uncategorized') === cat.name), `/posts/category/${encodeURIComponent(cat.name)}`),
       allCategories: categories,
+      tags: getTagItems(posts),
     },
   }))
 }
 
-const { category, posts, allCategories } = Astro.props
+const { category, posts, allCategories, tags, pagination } = Astro.props
 ---
 
 <BaseLayout title={`分类: ${category}`} currentPath={`/posts/category/${category}`}>
   <div class="container-main page-shell">
     <SectionHeading label="分类手札" title={category} level="h1" variant="page">
-      <span slot="actions">共 {posts.length} 篇手札</span>
+      <span slot="actions">共 {pagination.totalPosts} 篇手札</span>
     </SectionHeading>
-    <PostCollection posts={posts} categories={allCategories} activeCategory={category} />
+    <PostCollection posts={posts} categories={allCategories} activeCategory={category} tags={tags} pagination={pagination} />
   </div>
 </BaseLayout>

@@ -8,14 +8,16 @@ const minimumDepth = Math.min(...headings.map((heading) => heading.depth))
 
 <aside class="article-aside">
   <nav class="article-toc" aria-label="本篇目录" data-article-toc>
-    <p class="toc-label">本篇目录</p>
-    <ol>
+    <details data-toc-panel>
+      <summary data-toc-toggle><span>本篇目录</span><span class="toc-count">{headings.length} 节</span><span class="toc-toggle" aria-hidden="true">＋</span></summary>
+      <ol>
       {headings.map((heading, index) => (
         <li class:list={{ 'toc-nested': heading.depth > minimumDepth }}>
           <a href={`#${heading.slug}`} aria-current={index === 0 ? 'location' : undefined}>{heading.text}</a>
         </li>
       ))}
-    </ol>
+      </ol>
+    </details>
     <a class="toc-back" href={withBase('/posts/')}>返回文章总目 <span aria-hidden="true">↗</span></a>
   </nav>
 </aside>
@@ -25,6 +27,20 @@ const minimumDepth = Math.min(...headings.map((heading) => heading.depth))
     const toc = document.querySelector<HTMLElement>('[data-article-toc]')
     if (!toc || toc.dataset.bound === 'true') return
     toc.dataset.bound = 'true'
+    const panel = toc.querySelector<HTMLDetailsElement>('[data-toc-panel]')!
+    const toggle = toc.querySelector<HTMLElement>('[data-toc-toggle]')!
+    const narrow = window.matchMedia('(max-width: 1023px)')
+    const controller = new AbortController()
+    const { signal } = controller
+    const syncLayout = () => {
+      // Keep focus reachable when a resize folds a currently focused chapter.
+      if (narrow.matches && panel.contains(document.activeElement) && document.activeElement !== toggle) toggle.focus({ preventScroll: true })
+      panel.open = !narrow.matches
+      toggle.tabIndex = narrow.matches ? 0 : -1
+    }
+    syncLayout()
+    narrow.addEventListener('change', syncLayout, { signal })
+    toggle.addEventListener('click', event => { if (!narrow.matches) event.preventDefault() }, { signal })
     const links = Array.from(toc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'))
     const sections = links.flatMap((link) => {
       const element = document.getElementById(decodeURIComponent(link.hash.slice(1)))
@@ -36,8 +52,15 @@ const minimumDepth = Math.min(...headings.map((heading) => heading.depth))
     for (const section of sections) {
       section.link.addEventListener('click', () => {
         clickedSection = section
+        if (narrow.matches) {
+          panel.open = false
+          // The selected link is now hidden. Move focus to the chapter while
+          // leaving the native anchor navigation to update the URL and scroll.
+          section.element.setAttribute('tabindex', '-1')
+          section.element.focus({ preventScroll: true })
+        }
         update()
-      })
+      }, { signal })
     }
     function update() {
       frame = null
@@ -55,16 +78,20 @@ const minimumDepth = Math.min(...headings.map((heading) => heading.depth))
       }
     }
     const onScroll = () => { if (frame === null) frame = requestAnimationFrame(update) }
+    const onHashChange = () => {
+      clickedSection = sections.find(section => section.link.hash === window.location.hash)
+      update()
+    }
     // A short article may not have enough space below a heading to align it
     // with the top. Keep the chosen chapter selected until the reader moves.
     const onUserInput = () => { clickedSection = undefined; onScroll() }
     const userEvents = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const
-    window.addEventListener('scroll', onScroll, { passive: true })
-    userEvents.forEach((event) => window.addEventListener(event, onUserInput, { passive: true }))
+    window.addEventListener('scroll', onScroll, { passive: true, signal })
+    window.addEventListener('hashchange', onHashChange, { signal })
+    userEvents.forEach((event) => window.addEventListener(event, onUserInput, { passive: true, signal }))
     update()
     document.addEventListener('astro:before-swap', () => {
-      window.removeEventListener('scroll', onScroll)
-      userEvents.forEach((event) => window.removeEventListener(event, onUserInput))
+      controller.abort()
       if (frame !== null) cancelAnimationFrame(frame)
     }, { once: true })
   }
@@ -75,7 +102,11 @@ const minimumDepth = Math.min(...headings.map((heading) => heading.depth))
 <style>
   .article-aside { min-width: 0; }
   .article-toc { position: sticky; top: 104px; padding-left: 1.5rem; border-left: 1px solid var(--color-border); }
-  .toc-label { color: var(--color-text-muted); font-size: 0.7rem; letter-spacing: 0.12em; margin-bottom: 1rem; }
+  summary { display: flex; align-items: center; gap: var(--space-3); color: var(--color-text-muted); font-size: 0.75rem; letter-spacing: 0.08em; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  .toc-count { margin-left: auto; font-size: 0.7rem; letter-spacing: 0; }
+  .toc-toggle { display: none; }
+  details[open] ol { padding-top: var(--space-3); }
   ol { list-style: none; margin: 0; padding: 0; }
   li { margin-bottom: 0.7rem; }
   .toc-nested { margin-left: 0.85rem; }
@@ -85,9 +116,15 @@ const minimumDepth = Math.min(...headings.map((heading) => heading.depth))
   .toc-back:hover { color: var(--color-accent); }
   @media (max-width: 1023px) {
     .article-aside { grid-row: 1; }
-    .article-toc { position: static; padding: 1rem 0; border-left: 0; border-bottom: 1px solid var(--color-border); }
-    ol { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+    .article-toc { position: static; padding: 0; border-left: 0; border-block: 1px solid var(--color-border); }
+    summary { min-height: 44px; cursor: pointer; color: var(--color-text); }
+    .toc-toggle { display: inline-block; color: var(--color-accent); transition: transform var(--motion-fast); }
+    details[open] .toc-toggle { transform: rotate(45deg); }
+    details[open] ol { padding-block: 0 var(--space-3); }
+    ol { display: block; }
     li, .toc-nested { margin: 0; }
+    .toc-nested { padding-left: var(--space-4); }
+    li a { min-height: 44px; display: flex; align-items: center; padding-block: var(--space-2); font-size: 0.85rem; }
     .toc-back { display: none; }
   }
 </style>

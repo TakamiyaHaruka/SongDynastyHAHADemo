@@ -40,7 +40,8 @@ const musicCards = await loadPreparedMusicCards(homeMusicAppleLinks);
                     data-track-count={item.trackCount !== null ? String(item.trackCount) : ''}
                     data-accent={item.accent}
                   >
-                    <button type="button" class="home-music-select" data-music-select aria-pressed={isActive ? 'true' : 'false'} aria-label={`选择曲目：${item.title}`}>
+                    <button type="button" class="home-music-select" data-music-select aria-pressed={isActive ? 'true' : 'false'}>
+                    <span class="sr-only">选择曲目：</span>
                     <span class="home-music-item-artwork" data-music-item-artwork>
                       <span class="home-music-item-artwork-cover">
                         {item.artwork ? (
@@ -51,7 +52,7 @@ const musicCards = await loadPreparedMusicCards(homeMusicAppleLinks);
                             sizes="(max-width: 639px) 96px, 180px"
                             data-src={isActive ? undefined : artwork}
                             data-srcset={isActive ? undefined : artworkSrcSet}
-                            alt={`${item.title} 封面`}
+                            alt=""
                             loading="lazy"
                             width="180"
                             height="180"
@@ -103,7 +104,7 @@ const musicCards = await loadPreparedMusicCards(homeMusicAppleLinks);
         </div>
         <div class="home-music-footer">
           <p class="home-music-status" data-music-status role="status" aria-live="polite" aria-atomic="true">{musicCards[0].previewUrl ? `已选择《${musicCards[0].title}》，可播放试听片段。` : `《${musicCards[0].title}》暂无试听，可前往 Apple Music 听原曲。`}</p>
-          <a class="home-music-original text-link" data-music-original href={musicCards[0].link} target="_blank" rel="noopener noreferrer" aria-label={`在 Apple Music 打开 ${musicCards[0].title}（新窗口）`}>在 Apple Music 听原曲 <span aria-hidden="true">↗</span></a>
+          <a class="home-music-original text-link" data-music-original href={musicCards[0].link} target="_blank" rel="noopener noreferrer" aria-label={`在 Apple Music 听原曲：${musicCards[0].title}（新窗口）`}>在 Apple Music 听原曲 <span aria-hidden="true">↗</span></a>
           <p class="home-music-keyboard-help">方向键选曲 · Enter / 空格选择 · Tab 切换操作</p>
         </div>
       </div>

@@ -2,15 +2,18 @@
 import type { CategoryItem } from '../utils/categories'
 import NameSeal from './NameSeal.astro'
 import ActionLink from './ActionLink.astro'
+import { withBase } from '../utils/paths'
 
 const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/'
 
 interface Props {
   categories: CategoryItem[]
   activeCategory?: string
+  tags?: { name: string; count: number }[]
+  activeTag?: string
 }
 
-const { categories, activeCategory } = Astro.props
+const { categories, activeCategory, tags = [], activeTag } = Astro.props
 ---
 
 <aside class="post-sidebar">
@@ -46,6 +49,13 @@ const { categories, activeCategory } = Astro.props
   </nav>
 
   <!-- RSS -->
+  {tags.length > 0 && <nav class="sidebar-section" aria-label="文章标签">
+    <div class="sidebar-section-title">标签</div>
+    <div class="sidebar-categories">
+      {tags.map(tag => <a class:list={['tag', { 'tag-active': tag.name === activeTag }]} aria-current={tag.name === activeTag ? 'page' : undefined} href={withBase(`/posts/tag/${encodeURIComponent(tag.name)}/`)}>{tag.name}<span class="tag-count">{tag.count}</span></a>)}
+    </div>
+  </nav>}
+  <div class="sidebar-section"><ActionLink href={withBase('/search/')} variant="outline">检索手札 <span aria-hidden="true">↗</span></ActionLink></div>
   <div class="sidebar-section sidebar-subscribe">
     <ActionLink href={`${base}rss/`} variant="outline" class="sidebar-rss">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">

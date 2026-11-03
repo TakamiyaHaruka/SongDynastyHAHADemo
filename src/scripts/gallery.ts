@@ -29,6 +29,7 @@ function initGallery() {
   let opener: HTMLButtonElement | undefined
   let scrollLock: { overflow: string; gutter: string; x: number; y: number } | undefined
   let startedOutside = false
+  let imageRequest = 0
 
   const setImageState = (state: 'loading' | 'ready' | 'error') => {
     stage.setAttribute('aria-busy', String(state === 'loading'))
@@ -42,11 +43,18 @@ function initGallery() {
     title.textContent = thumbnail.alt
     count.textContent = `${index + 1} / ${items.length}`
     image.alt = thumbnail.alt
-    image.width = thumbnail.width
-    image.height = thumbnail.height
+    image.width = Number(thumbnail.dataset.fullWidth) || thumbnail.width
+    image.height = Number(thumbnail.dataset.fullHeight) || thumbnail.height
     setImageState('loading')
-    image.src = thumbnail.currentSrc || thumbnail.src
-    if (image.complete && image.naturalWidth > 0) setImageState('ready')
+    image.src = thumbnail.dataset.fullSrc || thumbnail.currentSrc || thumbnail.src
+    const request = ++imageRequest
+    // A bitmap can expose its dimensions before it is ready to paint. Keep the
+    // loading state until decoding finishes, ignoring a superseded selection.
+    void image.decode().then(() => {
+      if (dialog.open && request === imageRequest) setImageState('ready')
+    }).catch(() => {
+      if (dialog.open && request === imageRequest) setImageState('error')
+    })
   }
   const finishClose = (restoreFocus = true) => {
     if (scrollLock) {
@@ -60,6 +68,7 @@ function initGallery() {
     }
     if (restoreFocus && opener?.isConnected) opener.focus({ preventScroll: true })
     opener = undefined
+    imageRequest++
     image.removeAttribute('src')
     setImageState('ready')
   }
@@ -83,8 +92,6 @@ function initGallery() {
   closeButton.addEventListener('click', () => close(), { signal })
   previous.addEventListener('click', () => show(index - 1), { signal })
   next.addEventListener('click', () => show(index + 1), { signal })
-  image.addEventListener('load', () => { if (dialog.open) setImageState('ready') }, { signal })
-  image.addEventListener('error', () => { if (dialog.open) setImageState('error') }, { signal })
   dialog.addEventListener('cancel', event => { event.preventDefault(); close() }, { signal })
   dialog.addEventListener('close', () => { if (!dialog.open) finishClose() }, { signal })
 

@@ -30,13 +30,25 @@
 - 手机端主要操作目标至少 44px；菜单打开后焦点留在菜单内，Esc 关闭并返回触发按钮。
 - 保留 ClientRouter、hover 预取及脚本离页清理；新增交互需适配 astro:page-load / astro:before-swap。
 - `GalleryViewer.astro` 与 `src/scripts/gallery.ts` 管理画册原生对话框：大图使用 `object-fit: contain`，只在打开或切换时赋予图片地址；关闭时恢复滚动及触发按钮焦点，离页时释放对话框与事件。
+- 画册数据可配置 `fullSrc`、`fullWidth`、`fullHeight`，分别用于展卷资源与真实尺寸；未配置时复用缩略图。大图完成解码后撤去加载提示，切换或关闭会使旧的解码结果失效。首屏独立横卷与三幅精选 WebP 的制作记录见 `artwork.md`。
+- `ArticleToc.astro` 使用原生 details / summary。1023px 及以下默认折叠，章节操作至少 44px；选章后收起并将焦点移至目标标题，保留浏览器原生锚点历史。桌面自动展开，断点切换及离页时清理监听。
+- `src/utils/og.ts` 使用本地 Noto Serif SC 字体包，固定字重并转换成轮廓路径，再输出 1200 × 630 PNG。字体转换结果按源文件缓存在当前构建进程；缺字时明确失败。标题、简介两行截断，副标题一行，均由实际字形排版。
 - 音乐列表的选曲与播放使用相邻的原生按钮，避免交互控件嵌套；状态通过单独的 polite live region 播报，原曲链接始终可用。播放请求支持取消和超时，离页时解除事件、计时器及音频。
 
 ## 验证
 
-执行 `npm run check`、`npm test`、`npm run build`。修改布局后检查首页、文章总目、分类、文章详情、友人、关于，在 320 / 390 / 768 / 1440px 和明暗主题下验证溢出、标题层级与交互。新增 CSS 还需确认没有让音乐或正文样式重新进入不相关页面。
+执行 `npm run check`、`npm test`、`npm run build`。项目以桌面场景验收；修改布局后检查首页、文章总目、分类、标签、检索、文章详情、友人、关于，在 1280 / 1440px 和明暗主题下验证溢出、标题层级与交互。新增 CSS 还需确认没有让音乐或正文样式重新进入不相关页面。
 
 `npm run test:e2e` 在生产构建上自动检查上述关键流程与主题、宽度组合，并检查弱网首屏与预热导航预算。首次使用需安装 Playwright Chromium；`npm run validate` 还包含站内链接和资源预算，CI 在全部检查通过后部署。
+
+`npm run test:a11y` 单独运行 axe 扫描；完整回归也包含该项目。新增控件优先使用可见文字作为名称，额外操作说明通过 sr-only 文本补充；覆盖 aria-label 时必须保留完整可见文字。正文跳转目标使用 `tabindex="-1"`，实际章节从 h2 开始，h3 作为其子节。扫描与人工复核约定见 `accessibility.md`。
+
+## 标签、检索与分页
+
+- `PostCollection.astro` 接收分页后的文章与 `pagination`，通过 `PostPagination.astro` 生成原生上一页 / 下一页链接。`src/utils/post-lists.ts` 统一维护每页 10 篇和标签计数。
+- 文章总目、分类、标签的首页使用原有短路径，第二页起为对应路径下的 `/page/2/`；只生成真实存在的页，不生成 `/page/1/`。所有列表从已发布集合派生。
+- `search-index.json.ts` 输出已发布文章的文本索引，`src/lib/search-index.ts` 去除正文 Markdown / HTML 标记。索引只由 `/search/` 请求，其他页面不加载索引及检索脚本。
+- `src/utils/search.ts` 负责多关键词、全半角与大小写归一、分类 / 标签交集、排序和分页；`src/scripts/search.ts` 处理表单、结果播报、地址及历史恢复、请求取消和失败重试。动态结果使用 DOM textContent，避免把查询或索引当成 HTML 执行。
 
 ## 文章发布
 

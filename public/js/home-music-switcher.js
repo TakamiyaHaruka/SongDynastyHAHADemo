@@ -393,7 +393,7 @@
         syncPreviewForSelection(selected);
         if (original) {
           original.setAttribute('href', selected.dataset.link);
-          original.setAttribute('aria-label', `在 Apple Music 打开 ${selected.dataset.title}（新窗口）`);
+          original.setAttribute('aria-label', `在 Apple Music 听原曲：${selected.dataset.title}（新窗口）`);
         }
         setState('idle');
 

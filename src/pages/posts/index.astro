@@ -4,6 +4,7 @@ import PostCollection from '../../components/PostCollection.astro'
 import SectionHeading from '../../components/SectionHeading.astro'
 import { getPublishedPosts } from '../../lib/posts'
 import { getCategoryItems } from '../../utils/categories'
+import { getTagItems, listPage } from '../../utils/post-lists'
 
 const posts = await getPublishedPosts()
 const categories = getCategoryItems(posts)
@@ -14,6 +15,6 @@ const categories = getCategoryItems(posts)
     <SectionHeading label="御笔手札" title="文章总目" level="h1" variant="page">
       <span slot="actions">共 {posts.length} 篇手札</span>
     </SectionHeading>
-    <PostCollection posts={posts} categories={categories} />
+    <PostCollection {...listPage(posts, '/posts')} categories={categories} tags={getTagItems(posts)} />
   </div>
 </BaseLayout>

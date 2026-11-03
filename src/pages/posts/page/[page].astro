@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import SectionHeading from '../../../components/SectionHeading.astro'
+import PostCollection from '../../../components/PostCollection.astro'
+import { getPublishedPosts } from '../../../lib/posts'
+import { getCategoryItems } from '../../../utils/categories'
+import { getTagItems, listPage, pagePath } from '../../../utils/post-lists'
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts()
+  return Array.from({ length: listPage(posts, '/posts').pagination.totalPages - 1 }, (_, index) => ({
+    params: { page: String(index + 2) },
+    props: { ...listPage(posts, '/posts', index + 2), categories: getCategoryItems(posts), tags: getTagItems(posts) },
+  }))
+}
+const { posts, pagination, categories, tags } = Astro.props
+---
+<BaseLayout title={`文章 · 第 ${pagination.currentPage} 页`} currentPath={pagePath('/posts', pagination.currentPage)}>
+  <div class="container-main page-shell">
+    <SectionHeading label="御笔手札" title="文章总目" level="h1" variant="page"><span slot="actions">共 {pagination.totalPosts} 篇手札</span></SectionHeading>
+    <PostCollection posts={posts} pagination={pagination} categories={categories} tags={tags} />
+  </div>
+</BaseLayout>
