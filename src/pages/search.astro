@@ -48,4 +48,6 @@ const posts = await getPublishedPosts()
   [data-search-results] :global(a:hover h2) { color: var(--color-accent); }
   [data-search-results] :global(p) { color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.9; overflow-wrap: anywhere; }
   [data-search-results] :global(.search-meta) { display: flex; align-items: center; gap: var(--space-4); color: var(--color-text-muted); font-size: 0.75rem; }
+  [data-search-results] :global(mark) { background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg)); color: var(--color-text); font-weight: 600; padding-inline: 0.08em; border-bottom: 1px solid var(--color-accent); box-decoration-break: clone; }
+  [data-search-results] :global(.search-tags) { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-3); font-size: 0.75rem; }
 </style>

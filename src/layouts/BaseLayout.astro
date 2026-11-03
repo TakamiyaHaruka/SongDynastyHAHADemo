@@ -58,6 +58,16 @@ function isActive(href: string): boolean {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#faf7f2" />
     <script is:inline src={withBase('/js/theme-init.js')} data-astro-rerun></script>
+    <script is:inline>
+      // Register before ClientRouter so a form can own query-only history.
+      if (!window.siteSearchHistoryBridge) {
+        window.siteSearchHistoryBridge = true;
+        window.addEventListener('popstate', function (event) {
+          var handled = new CustomEvent('haruka:search-history', { cancelable: true });
+          if (!document.dispatchEvent(handled)) event.stopImmediatePropagation();
+        });
+      }
+    </script>
     <ClientRouter fallback="swap" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />

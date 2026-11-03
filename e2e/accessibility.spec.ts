@@ -26,6 +26,7 @@ test('search form, filtered results and no-results state are accessible', async 
   await page.goto('search/?q=艮岳')
   await expect(page.locator('[data-search-results]')).toHaveAttribute('aria-busy', 'false')
   await expect(page.getByRole('link', { name: /御制艮岳记/ })).toBeVisible()
+  await expect(page.locator('.search-result mark').first()).toBeVisible()
   await scan(page, info, 'search-results')
   await page.getByRole('searchbox', { name: '关键词' }).fill('绝无此结果的手札')
   await page.getByRole('button', { name: '检索', exact: true }).click()

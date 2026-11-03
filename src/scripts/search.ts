@@ -1,4 +1,14 @@
-import { searchPosts, type SearchPost, type SearchState } from '../utils/search'
+import { highlightSearchText, searchExcerpt, searchPosts, type SearchPost, type SearchState } from '../utils/search'
+
+function appendHighlighted(element: HTMLElement, text: string, query: string) {
+  for (const part of highlightSearchText(text, query)) {
+    if (part.matched) {
+      const mark = document.createElement('mark')
+      mark.textContent = part.text
+      element.append(mark)
+    } else element.append(document.createTextNode(part.text))
+  }
+}
 
 let cleanup: (() => void) | undefined
 function initSearch() {
@@ -8,6 +18,7 @@ function initSearch() {
   if (!root) return
   const controller = new AbortController()
   const { signal } = controller
+  const pathname = location.pathname
   const form = root.querySelector<HTMLFormElement>('form')!
   const query = form.querySelector<HTMLInputElement>('[name="q"]')!
   const category = form.querySelector<HTMLSelectElement>('[name="category"]')!
@@ -51,16 +62,28 @@ function initSearch() {
       meta.className = 'search-meta'
       const label = document.createElement('span')
       label.className = 'tag'
-      label.textContent = post.category
+      appendHighlighted(label, post.category, state.q)
       const date = document.createElement('time')
       date.dateTime = post.date
       date.textContent = post.date
       meta.append(label, date)
       const title = document.createElement('h2')
-      title.textContent = post.title
+      appendHighlighted(title, post.title, state.q)
       const description = document.createElement('p')
-      description.textContent = post.description || post.body.slice(0, 100)
+      description.className = 'search-excerpt'
+      appendHighlighted(description, searchExcerpt(post, state.q), state.q)
       link.append(meta, title, description)
+      if (post.tags.length) {
+        const tags = document.createElement('p')
+        tags.className = 'search-tags'
+        for (const tag of post.tags) {
+          const name = document.createElement('span')
+          name.append(document.createTextNode('#'))
+          appendHighlighted(name, tag, state.q)
+          tags.append(name)
+        }
+        link.append(tags)
+      }
       fragment.append(link)
     }
     results.replaceChildren(fragment)
@@ -112,7 +135,14 @@ function initSearch() {
   previous.addEventListener('click', () => { state.page--; render(true); saveUrl() }, { signal })
   next.addEventListener('click', () => { state.page++; render(true); saveUrl() }, { signal })
   root.querySelector('[data-search-retry]')!.addEventListener('click', () => { void load() }, { signal })
-  window.addEventListener('popstate', () => { fromUrl(); render() }, { signal })
+  // The early history bridge offers this form query-only navigation before
+  // ClientRouter runs. Cross-page history remains owned by the router.
+  document.addEventListener('haruka:search-history', event => {
+    if (location.pathname !== pathname) return
+    event.preventDefault()
+    fromUrl()
+    render()
+  }, { signal })
   fromUrl()
   void load()
   cleanup = () => controller.abort()

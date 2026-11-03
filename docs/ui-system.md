@@ -30,7 +30,7 @@
 - 手机端主要操作目标至少 44px；菜单打开后焦点留在菜单内，Esc 关闭并返回触发按钮。
 - 保留 ClientRouter、hover 预取及脚本离页清理；新增交互需适配 astro:page-load / astro:before-swap。
 - `GalleryViewer.astro` 与 `src/scripts/gallery.ts` 管理画册原生对话框：大图使用 `object-fit: contain`，只在打开或切换时赋予图片地址；关闭时恢复滚动及触发按钮焦点，离页时释放对话框与事件。
-- 画册数据可配置 `fullSrc`、`fullWidth`、`fullHeight`，分别用于展卷资源与真实尺寸；未配置时复用缩略图。大图完成解码后撤去加载提示，切换或关闭会使旧的解码结果失效。首屏独立横卷与三幅精选 WebP 的制作记录见 `artwork.md`。
+- 画册数据可配置 `fullSrc`、`fullWidth`、`fullHeight`，分别用于展卷资源与真实尺寸；未配置时复用缩略图。大图完成解码后撤去加载提示，切换或关闭会使旧的解码结果失效。首屏独立横卷与十三幅画册 WebP 的制作记录见 `artwork.md`。
 - `ArticleToc.astro` 使用原生 details / summary。1023px 及以下默认折叠，章节操作至少 44px；选章后收起并将焦点移至目标标题，保留浏览器原生锚点历史。桌面自动展开，断点切换及离页时清理监听。
 - `src/utils/og.ts` 使用本地 Noto Serif SC 字体包，固定字重并转换成轮廓路径，再输出 1200 × 630 PNG。字体转换结果按源文件缓存在当前构建进程；缺字时明确失败。标题、简介两行截断，副标题一行，均由实际字形排版。
 - 音乐列表的选曲与播放使用相邻的原生按钮，避免交互控件嵌套；状态通过单独的 polite live region 播报，原曲链接始终可用。播放请求支持取消和超时，离页时解除事件、计时器及音频。
@@ -48,7 +48,8 @@
 - `PostCollection.astro` 接收分页后的文章与 `pagination`，通过 `PostPagination.astro` 生成原生上一页 / 下一页链接。`src/utils/post-lists.ts` 统一维护每页 10 篇和标签计数。
 - 文章总目、分类、标签的首页使用原有短路径，第二页起为对应路径下的 `/page/2/`；只生成真实存在的页，不生成 `/page/1/`。所有列表从已发布集合派生。
 - `search-index.json.ts` 输出已发布文章的文本索引，`src/lib/search-index.ts` 去除正文 Markdown / HTML 标记。索引只由 `/search/` 请求，其他页面不加载索引及检索脚本。
-- `src/utils/search.ts` 负责多关键词、全半角与大小写归一、分类 / 标签交集、排序和分页；`src/scripts/search.ts` 处理表单、结果播报、地址及历史恢复、请求取消和失败重试。动态结果使用 DOM textContent，避免把查询或索引当成 HTML 执行。
+- `src/utils/search.ts` 负责多关键词、全半角与大小写归一、分类 / 标签交集、排序和分页，并提供原文字素范围、高亮分段和命中摘要。正文命中时优先展示约 160 个字素的上下文片段，首尾截断使用省略号；超长关键词保留完整命中。无正文命中时使用简介，空查询使用默认简介。
+- `src/scripts/search.ts` 处理表单、结果播报、地址及历史恢复、请求取消和失败重试。高亮使用 mark 与 DOM textContent / Text 节点，保留原文，不把查询或索引当成 HTML 执行；高亮采用主题色背景、下划线和字重。相同检索路径的查询历史在页面内恢复，跨页面历史交给 ClientRouter。
 
 ## 文章发布
 
@@ -61,5 +62,5 @@
 - `integrations/site-fonts.mjs` 在开发、检查及构建前先准备音乐快照，再扫描 `src/`、`public/js/`、音乐资料缓存和当次快照，按其中出现的字符生成 Inter 与 Noto Serif SC 字体子集。页面从同一份 `.cache/music-build.json` 读取音乐，避免冷缓存或缓存写入失败造成字库与歌名不同步；保留逐首长期缓存的失败重试规则。开发时新增或删除文字会自动更新，无须手工维护汉字清单。
 - 生成字体、CSS 及清单位于 `.cache/site-fonts/`，缺失时自动创建，不提交生成文件。字体内容作为缓存键的一部分，字体包或文字变化后会生成新的资源地址。构建环境需要安装开发依赖中的 `subset-font`。
 - `BaseLayout.astro` 统一加载生成的字体 CSS；字体文件独立输出，避免小字体被内联到每页共享的 CSS。字体授权文件位于 `public/fonts/`，随站点一起发布。
-- 画作 SVG 源文件位于 `src/assets/artwork/`，在 `src/data/home-gallery.ts` 中导入并声明真实宽高。Vite 输出带哈希的独立地址，让重复使用的画作共用缓存。
+- 首屏横卷与十三幅画作均位于 `src/assets/artwork/generated/`；画册数据统一声明 640 × 427 缩略图和 1536 × 1024 完整图。Vite 输出带哈希的独立地址，让重复使用的画作共用缓存。制作提示词与编码记录见 `artwork.md`。
 - 首屏横卷由首页 head 插槽预加载；第一幅精选画作提前加载，其余精选及展开画册使用原生懒加载。不要把首屏可见的画作全部改为懒加载，也不要把整套画册内联到 HTML。

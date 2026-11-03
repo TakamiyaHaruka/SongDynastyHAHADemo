@@ -166,12 +166,48 @@ test('gallery supports keyboard, focus restoration, wrapping and route cleanup',
   expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('')
 })
 
+test('the complete gallery uses separate WebP thumbnails and loads every full composition on demand', async ({ page }, info) => {
+  await page.goto('./')
+  const works = page.locator('[data-gallery-open]')
+  await expect(works).toHaveCount(13)
+  const images = await works.locator('img').evaluateAll(images => images.map(image => ({
+    thumbnail: (image as HTMLImageElement).src, full: (image as HTMLImageElement).dataset.fullSrc!, alt: (image as HTMLImageElement).alt,
+  })))
+  expect(new Set(images.map(image => image.full)).size).toBe(13)
+  expect(images.every(image => /-640\..*\.webp$/.test(image.thumbnail) && /-1536\..*\.webp$/.test(image.full))).toBe(true)
+  const before = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name))
+  expect(before.some(url => /-1536\./.test(url))).toBe(false)
+  expect(images.slice(3).some(image => before.includes(image.thumbnail))).toBe(false)
+  await page.locator('.gallery-more > summary').click()
+  for (const thumbnail of await page.locator('.extended-gallery img').all()) {
+    await thumbnail.scrollIntoViewIfNeeded()
+    await expect.poll(() => thumbnail.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBe(640)
+  }
+  await page.locator('#gallery').screenshot({ path: `.cache/gallery-review/complete-${info.project.name}.png`, style: '.nav-bar { visibility: hidden !important; }' })
+  await works.nth(3).click()
+  const full = page.locator('[data-gallery-image]')
+  for (let position = 3; position < images.length; position++) {
+    await expect(full).toHaveAttribute('src', images[position].full)
+    await expect(page.locator('[data-gallery-title]')).toHaveText(images[position].alt)
+    await expect(page.locator('[data-gallery-stage]')).toHaveAttribute('aria-busy', 'false')
+    await expect(full).toBeVisible()
+    expect(await full.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBe(1536)
+    if (position < images.length - 1) await page.locator('[data-gallery-next]').click()
+  }
+  await page.keyboard.press('Escape')
+  await expect(works.nth(3)).toBeFocused()
+  await expect(page.locator('.gallery-more')).toHaveJSProperty('open', true)
+})
+
 test('search finds body text and tags, combines filters and restores shared URLs and history', async ({ page }, info) => {
   await page.goto('search/?q=太湖')
   const input = page.getByRole('searchbox', { name: '关键词' })
   const submit = page.getByRole('button', { name: '检索', exact: true })
   await expect(page.getByRole('status')).toContainText('找到 1 篇')
   await expect(page.locator('.search-result h2')).toHaveText('御制艮岳记')
+  await expect(page.locator('.search-excerpt mark')).toHaveText('太湖')
+  await expect(page.locator('.search-excerpt')).toContainText('皆太湖之佳者')
+  await page.screenshot({ path: `.cache/search-review/body-snippet-${info.project.name}.png`, fullPage: true })
   await expect(input).toHaveValue('太湖')
   await input.fill('园林')
   await page.getByLabel('分类', { exact: true }).selectOption('御笔')
@@ -200,6 +236,37 @@ test('search finds body text and tags, combines filters and restores shared URLs
   await expect(page.locator('.post-card')).toHaveCount(1)
   await page.locator('.post-card').click()
   await expect(page.getByRole('list', { name: '文章标签' }).getByRole('link', { name: '宋徽宗' })).toHaveAttribute('href', /\/posts\/tag\//)
+})
+
+test('search highlights original text in titles, body excerpts and tags without interpreting HTML', async ({ page }, info) => {
+  await page.addInitScript(() => {
+    Object.assign(window, { searchPagePreparations: 0 })
+    document.addEventListener('astro:before-preparation', () => { (window as any).searchPagePreparations++ })
+  })
+  const malicious = '<img src=x onerror="window.searchInjection=true">'
+  await page.route('**/search-index.json', route => route.fulfill({ json: [{
+    id: 'highlight', title: `ＡＢＣ 山水 ${malicious}`, category: '御笔', tags: ['宋徽宗'],
+    description: '固定简介', body: '序言。'.repeat(100) + '太湖石边，山水清音。', date: '2026-11-03', href: './',
+  }] }))
+  await page.goto('search/?q=abc%20太湖%20宋徽宗')
+  await expect(page.getByRole('status')).toContainText('找到 1 篇')
+  await expect(page.locator('.search-result h2 mark')).toHaveText('ＡＢＣ')
+  await expect(page.locator('.search-excerpt mark')).toHaveText('太湖')
+  await expect(page.locator('.search-tags mark')).toHaveText('宋徽宗')
+  await expect(page.locator('.search-excerpt')).not.toContainText('固定简介')
+  await expect(page.locator('.search-result img, .search-result script')).toHaveCount(0)
+  await page.getByRole('searchbox', { name: '关键词' }).fill('<img')
+  await page.getByRole('button', { name: '检索', exact: true }).click()
+  await expect(page.locator('.search-result h2 mark')).toHaveText('<img')
+  expect(await page.evaluate(() => (window as any).searchInjection)).toBeUndefined()
+  await page.getByRole('button', { name: '清空', exact: true }).click()
+  await expect(page.locator('.search-result mark')).toHaveCount(0)
+  await page.goBack()
+  await expect(page.locator('.search-result h2 mark')).toHaveText('<img')
+  await page.goBack()
+  await expect(page.locator('.search-result h2 mark')).toHaveText('ＡＢＣ')
+  await page.screenshot({ path: `.cache/search-review/highlights-${info.project.name}.png`, fullPage: true })
+  expect(await page.evaluate(() => (window as any).searchPagePreparations)).toBe(0)
 })
 
 test('search index failure retries, paginates safely and rebinds after navigation', async ({ page }) => {
